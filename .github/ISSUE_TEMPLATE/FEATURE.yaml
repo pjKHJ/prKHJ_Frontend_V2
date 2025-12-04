@@ -8,8 +8,8 @@ body:
     attributes:
       label: 애플리케이션
       options:
-        - xquare-user-application
-        - xquare-admin-application
+        - khj-teacher-application
+        - khj-student-application
         - 공유 모듈
         - 전체
     validations:

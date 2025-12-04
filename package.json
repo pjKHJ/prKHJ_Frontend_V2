@@ -1,31 +1,34 @@
 {
-  "name": "khj-v2",
+  "name": "khj",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "check-types": "turbo run check-types",
+    "prepare": "husky",
+    "lint:all": "turbo run lint --parallel",
+    "format:all": "turbo run format --parallel",
+    "format": "prettier --write ."
   },
   "devDependencies": {
-    "@eslint/js": "^9.36.0",
-    "@types/node": "^24.6.0",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react-swc": "^4.1.0",
-    "eslint": "^9.36.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.22",
-    "globals": "^16.4.0",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.45.0",
-    "vite": "^7.1.7"
+    "husky": "^9.1.7",
+    "prettier": "^3.7.4",
+    "turbo": "^2.6.2",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@10.9.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
   }
 }

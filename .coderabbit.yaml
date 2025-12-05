@@ -1,5 +1,4 @@
 language: "ko-KR"
-version: 1
 reviews:
   profile: "chill"
   level: basic
@@ -11,16 +10,3 @@ reviews:
   auto_assign_reviewers: true
   auto_review_on:
     - pull_request
-  path_filters:
-    exclude:
-      - "dist/**"
-      - "node_modules/**"
-      - "build/**"
-style:
-  language: ko
-  tone: friendly
-  summary: true
-instructions:
-  - Emotion 기반의 css
-  - React 컴포넌트 작성
-  - TypeScript 사용

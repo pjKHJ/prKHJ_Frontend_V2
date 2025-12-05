@@ -1,0 +1,15 @@
+version: 1
+review:
+  level: basic
+  enable_auto_review: true
+  auto_review_on:
+    - pull_request
+  path_filters:
+    exclude:
+      - "dist/**"
+      - "node_modules/**"
+      - "build/**"
+style:
+  language: ko
+  tone: friendly
+  summary: true

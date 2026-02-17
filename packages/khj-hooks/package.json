@@ -1,0 +1,38 @@
+{
+  "name": "@repo/khj-hooks",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --dts --format esm,cjs",
+    "dev": "tsup src/index.ts --dts --format esm,cjs --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "0.0.0",
+    "@repo/typescript-config": "0.0.0",
+    "@types/react": "^19.2.2",
+    "eslint": "^9.39.1",
+    "react": "^19.2.0",
+    "tsup": "^8.0.1",
+    "typescript": "5.9.2"
+  }
+}

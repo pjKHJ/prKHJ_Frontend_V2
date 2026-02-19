@@ -1,0 +1,7 @@
+{
+  "extends": "../../modules/typescript-configs/tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
+  },
+  "include": ["src", "../../modules/**/*"]
+}

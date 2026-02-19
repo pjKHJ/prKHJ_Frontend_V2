@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "ignoreDeprecations": "5.0",
+    "composite": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "importHelpers": true,
+    "isolatedModules": true,
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022",
+    "paths": {
+      "@khj/hooks": ["../../modules/khj-hooks/index.ts"],
+      "@khj/hooks/*": ["../../modules/khj-hooks/*"],
+      "@khj/utils": ["../../modules/khj-utils/index.ts"],
+      "@khj/utils/*": ["../../modules/khj-utils/*"],
+      "@khj/user-interfaces": [
+        "../../modules/khj-user-interfaces/index.ts"
+      ],
+      "@khj/user-interfaces/*": ["../../modules/khj-user-interfaces/*"]
+    }
+  } 
+}

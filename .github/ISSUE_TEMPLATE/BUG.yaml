@@ -8,8 +8,8 @@ body:
     attributes:
       label: 애플리케이션
       options:
-        - khj-teacher-application
         - khj-student-application
+        - khj-teacher-application
         - 공유 모듈
     validations:
       required: true

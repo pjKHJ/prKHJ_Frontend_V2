@@ -1,0 +1,10 @@
+{
+  "name": "@khj/typescript-configs",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./tsconfig.app.json": "./tsconfig.app.json",
+    "./tsconfig.node.json": "./tsconfig.node.json",
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  }
+}

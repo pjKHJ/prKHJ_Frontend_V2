@@ -7,23 +7,17 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@khj/hooks": path.resolve(
-        __dirname,
-        "../../modules/khj-hooks/index.ts"
-      ),
+      "@khj/hooks": path.resolve(__dirname, "../../modules/khj-hooks/index.ts"),
       "@khj/hooks/": path.resolve(__dirname, "../../modules/khj-hooks/"),
       "@khj/user-interfaces": path.resolve(
         __dirname,
-        "../../modules/khj-user-interfaces/index.ts"
+        "../../modules/khj-user-interfaces/index.ts",
       ),
       "@khj/user-interfaces/": path.resolve(
         __dirname,
-        "../../modules/khj-user-interfaces/"
+        "../../modules/khj-user-interfaces/",
       ),
-      "@khj/utils": path.resolve(
-        __dirname,
-        "../../modules/khj-utils/index.ts"
-      ),
+      "@khj/utils": path.resolve(__dirname, "../../modules/khj-utils/index.ts"),
       "@khj/utils/": path.resolve(__dirname, "../../modules/khj-utils/"),
     },
   },

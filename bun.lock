@@ -37,8 +37,8 @@
         "vitest": "^4.0.18",
       },
     },
-    "applications/khj-teacher-application": {
-      "name": "@khj/teacher-application",
+    "applications/khj-student-application": {
+      "name": "@khj/student-application",
       "version": "0.0.0",
       "dependencies": {
         "react": "^19.2.0",
@@ -57,8 +57,8 @@
         "vite": "^7.2.2",
       },
     },
-    "applications/khj-user-application": {
-      "name": "@khj/student-application",
+    "applications/khj-teacher-application": {
+      "name": "@khj/teacher-application",
       "version": "0.0.0",
       "dependencies": {
         "react": "^19.2.0",
@@ -261,7 +261,7 @@
 
     "@khj/hooks": ["@khj/hooks@workspace:modules/khj-hooks"],
 
-    "@khj/student-application": ["@khj/student-application@workspace:applications/khj-user-application"],
+    "@khj/student-application": ["@khj/student-application@workspace:applications/khj-student-application"],
 
     "@khj/teacher-application": ["@khj/teacher-application@workspace:applications/khj-teacher-application"],
 

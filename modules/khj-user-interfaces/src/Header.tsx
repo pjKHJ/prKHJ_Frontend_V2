@@ -47,7 +47,7 @@ const UpContainer = styled.div`
   align-items: center;
   padding: 0px 12px;
 
-  width: 1200px;
+  width: 100%;
   max-width: 1200px;
   height: 32px;
 `;
@@ -88,7 +88,7 @@ const DownContainer = styled.div`
   padding: 0px 16px;
   gap: 40px;
 
-  width: 1200px;
+  width: 100%;
   max-width: 1200px;
   height: 56px;
 `;

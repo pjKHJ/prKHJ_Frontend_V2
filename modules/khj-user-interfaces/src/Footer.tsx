@@ -29,9 +29,9 @@ const FooterText = styled.div`
   align-items: flex-end;
   padding: 10px 0px 20px;
 
-  width: 1200px;
+  width: 100%;
   max-width: 1200px;
-  height: 54px;
+  min-height: 54px;
 
   border-top: 1px solid #cdd1d5;
 

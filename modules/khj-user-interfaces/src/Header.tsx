@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
-import { Logo } from "@khj/user-interfaces";
+import Logo from "../assets/Logo.svg";
 
 export default function Header() {
   return (
@@ -31,11 +31,10 @@ const Container = styled.header`
   padding: 10px 0px 14px;
   gap: 4px;
 
+  position: relative;
   z-index: 1000;
-
   width: 100%;
   height: 120px;
-  top: 0px;
 
   background: #ffffff;
   border-bottom: 1px solid #8a949e;

@@ -5,7 +5,7 @@ export default function Footer() {
     <FooterWrapper>
       <FooterText>
         <p>
-          © 2025 Daedeok Software Meister High School . All rights reserved.
+          © 2026 Daedeok Software Meister High School . All rights reserved.
         </p>
       </FooterText>
     </FooterWrapper>

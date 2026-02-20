@@ -10,6 +10,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: <div>Home</div>,
       },
       {
         path: "signup",
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
       {
         path: "login",
         element: <Login />,
+      },
+      {
+        path: "*",
+        element: <div>Not Found</div>,
       },
     ],
   },

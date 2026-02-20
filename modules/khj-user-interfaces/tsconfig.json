@@ -7,6 +7,6 @@
     "module": "esnext",
     "target": "esnext"
   },
-  "include": ["index.ts", "src"],
+  "include": ["index.ts", "src", "assets"],
   "references": [{ "path": "../khj-utils" }, { "path": "../khj-hooks" }]
 }

@@ -8,6 +8,9 @@ const globalStyle = css`
     margin: 0;
     padding: 0;
   }
+  body {
+    background: #e6e8ea;
+  }
 `;
 
 export default function App() {

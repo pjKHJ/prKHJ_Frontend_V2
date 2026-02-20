@@ -23,6 +23,7 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   padding: 0px;
+  margin: 83px auto;
 
   width: 640px;
   height: 720px;

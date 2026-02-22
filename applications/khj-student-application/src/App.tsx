@@ -1,6 +1,4 @@
 import { Global, css } from "@emotion/react";
-import { RouterProvider } from "react-router-dom";
-import { router } from "./routes";
 
 const globalStyle = css`
   * {
@@ -17,7 +15,7 @@ export default function App() {
   return (
     <>
       <Global styles={globalStyle} />
-      <RouterProvider router={router} />
+      <div>khj-student-application</div>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "./pages/Login";
 import SignUp from "./pages/SingUp";
+import AddStudent from "./pages/AddStudent";
 import { Layout } from "@khj/user-interfaces";
 
 export const router = createBrowserRouter([
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
       {
         path: "login",
         element: <Login />,
+      },
+      {
+        path: "add-student",
+        element: <AddStudent />,
       },
       {
         path: "*",

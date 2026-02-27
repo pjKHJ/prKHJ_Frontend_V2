@@ -67,7 +67,7 @@ export default function DeleteStudent() {
         {/* 버튼 영역 */}
         <ButtonArea>
           <CancelButton>취소하기</CancelButton>
-          <SubmitButton>등록하기</SubmitButton>
+          <SubmitButton>삭제하기</SubmitButton>
         </ButtonArea>
       </Container>
     </PageWrapper>

@@ -31,6 +31,8 @@ export const router = createBrowserRouter([
       {
         path: "entry",
         element: <Entry />,
+      },
+      {
         path: "delete-student",
         element: <DeleteStudent />,
       },

@@ -15,7 +15,9 @@ export default function Entry() {
       <Box>
         <h2>로그인 후 서비스를 이용해 보세요</h2>
         <span>Deadok Software Coding Test System</span>
-        <button onClick={handleLogin}>로그인하러 가기</button>
+        <button type="button" onClick={handleLogin}>
+          로그인하러 가기
+        </button>
       </Box>
     </Wrapper>
   );

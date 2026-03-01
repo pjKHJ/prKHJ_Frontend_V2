@@ -10,7 +10,7 @@ export default function SignUp() {
       <InputContainer>
         <Input name="이름" width="400px" height="87px" />
         <Input name="이메일" width="400px" height="87px" />
-        <Input name="비밀번호" width="400px" height="87px" />
+        <Input name="비밀번호" width="400px" height="87px" type="password" />
         <LoginButton>회원가입</LoginButton>
       </InputContainer>
     </Container>

@@ -14,7 +14,7 @@ export default function Entry() {
       <img src={EntryPoint} alt="entry point" />
       <Box>
         <h2>로그인 후 서비스를 이용해 보세요</h2>
-        <span>Deadok Software Coding Test System</span>
+        <span>Deadeok Software Coding Test System</span>
         <button type="button" onClick={handleLogin}>
           로그인하러 가기
         </button>

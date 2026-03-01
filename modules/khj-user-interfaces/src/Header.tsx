@@ -14,8 +14,8 @@ export default function Header() {
       </UpContainer>
       <DownContainer>
         <DownText to="/">데이터 조회</DownText>
-        <DownText to="/">학생 등록</DownText>
-        <DownText to="/">학생 삭제</DownText>
+        <DownText to="/add-student">학생 등록</DownText>
+        <DownText to="/delete-student">학생 삭제</DownText>
       </DownContainer>
       <Link to="/">
         <ImgContainer src={Logo} alt="logo" />

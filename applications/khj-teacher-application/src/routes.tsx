@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SingUp";
 import AddStudent from "./pages/AddStudent";
 import { Layout } from "@khj/user-interfaces";
+import Entry from "./pages/Entry";
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         path: "add-student",
         element: <AddStudent />,
+      },
+      {
+        path: "entry",
+        element: <Entry />,
       },
       {
         path: "*",

@@ -10,7 +10,7 @@ export default function Login() {
       </TextContainer>
       <InputContainer>
         <Input name="이메일" width="400px" height="87px" />
-        <Input name="비밀번호" width="400px" height="87px" />
+        <Input name="비밀번호" width="400px" height="87px" type="password" />
         <SaveEmailContainer>
           <SaveEmailCheckbox type="checkbox" />
           <span>이메일 저장</span>

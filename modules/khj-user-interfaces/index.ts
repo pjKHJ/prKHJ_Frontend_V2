@@ -5,4 +5,5 @@ export { default as Layout } from "./src/Layout";
 export { default as BoardList } from "./src/BoardList";
 export { default as BoardItem } from "./src/BoardItem";
 export { default as Logo } from "./assets/Logo.svg";
+export { default as EntryPoint } from "./assets/EntryPoint.svg";
 export { default as SearchIcon } from "./assets/search_icon.png";

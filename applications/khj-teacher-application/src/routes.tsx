@@ -5,6 +5,7 @@ import AddStudent from "./pages/AddStudent";
 import DeleteStudent from "./pages/DeleteStudent";
 import List from "./pages/List";
 import { Layout } from "@khj/user-interfaces";
+import Entry from "./pages/Entry";
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
       {
         path: "add-student",
         element: <AddStudent />,
+      },
+      {
+        path: "entry",
+        element: <Entry />,
       },
       {
         path: "delete-student",

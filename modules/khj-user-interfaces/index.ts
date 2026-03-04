@@ -7,3 +7,4 @@ export { default as BoardItem } from "./src/BoardItem";
 export { default as Logo } from "./assets/Logo.svg";
 export { default as EntryPoint } from "./assets/EntryPoint.svg";
 export { default as SearchIcon } from "./assets/search_icon.png";
+export { default as UserInfo } from "./src/UserInfo";

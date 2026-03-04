@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
 import { Line } from "react-chartjs-2";
+import { useMemo } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,31 +25,35 @@ ChartJS.register(
 );
 
 export default function UserInfo() {
-  const getWeekDates = () => {
+  const WeekDates = useMemo(() => {
     const curr = new Date();
-    const first = curr.getDate() - curr.getDay() + 1;
+    const first = curr.getDate() - curr.getDay();
 
     return Array.from({ length: 7 }, (_, i) => {
       const day = new Date(curr.setDate(first + i));
-      return `${(day.getMonth() + 1).toString().padStart(2, "0")}/${(day.getDate() - 1).toString().padStart(2, "0")}`;
+      return `${(day.getMonth() + 1).toString().padStart(2, "0")}/${day.getDate().toString().padStart(2, "0")}`;
     });
-  };
+  }, []);
 
-  const solvedData = [2, 3, 0, 4, 2, 5, 3];
+  const solvedData = useMemo(() => {
+    return [2, 3, 0, 4, 2, 5, 3];
+  }, []);
 
-  const chartData = {
-    labels: getWeekDates(),
-    datasets: [
-      {
-        data: solvedData,
-        borderColor: "#86AFF9",
-        pointBackgroundColor: "#256ef4",
-        pointBorderColor: "#256ef4",
-        pointRadius: 9,
-        pointHoverRadius: 8,
-      },
-    ],
-  };
+  const chartData = useMemo(() => {
+    return {
+      labels: WeekDates,
+      datasets: [
+        {
+          data: solvedData,
+          borderColor: "#86AFF9",
+          pointBackgroundColor: "#256ef4",
+          pointBorderColor: "#256ef4",
+          pointRadius: 9,
+          pointHoverRadius: 8,
+        },
+      ],
+    };
+  }, [WeekDates, solvedData]);
 
   const chartOptions: ChartOptions<"line"> = {
     responsive: true,
@@ -128,7 +133,7 @@ export default function UserInfo() {
         <DividerLine />
         <CountList>
           {solvedData.map((count, index) => (
-            <Count key={index}>{count}개</Count>
+            <Count key={WeekDates[index]}>{count}개</Count>
           ))}
         </CountList>
       </ChartWrapper>

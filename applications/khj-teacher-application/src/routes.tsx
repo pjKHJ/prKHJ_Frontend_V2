@@ -6,6 +6,7 @@ import DeleteStudent from "./pages/DeleteStudent";
 import List from "./pages/List";
 import { Layout } from "@khj/user-interfaces";
 import Entry from "./pages/Entry";
+import Detail from "./pages/Detail";
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ export const router = createBrowserRouter([
       {
         path: "list",
         element: <List />,
+      },
+      {
+        path: "detail",
+        element: <Detail />,
       },
       {
         path: "*",

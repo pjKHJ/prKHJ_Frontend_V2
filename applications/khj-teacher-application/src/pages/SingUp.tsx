@@ -1,16 +1,61 @@
 import styled from "@emotion/styled";
+import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
+import { useMutation } from "@tanstack/react-query";
+import { signUp, type SignUpRequest } from "../apis/auth";
 
 export default function SignUp() {
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
+  const [signupCode, setSignupCode] = useState("");
+
+  const { mutate: signUpMutate } = useMutation({
+    mutationFn: (data: SignUpRequest) => signUp(data),
+    onSuccess: (data) => {
+      console.log("회원가입 성공:", data);
+    },
+    onError: (error) => {
+      console.error("회원가입 실패:", error);
+    },
+  });
+
+  const handleSignUp = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    signUpMutate({
+      userName: userId,
+      password: password,
+      signupCode: signupCode,
+    });
+  };
+
   return (
     <Container>
       <TextContainer>
         <h1>회원가입</h1>
       </TextContainer>
-      <InputContainer>
-        <Input name="이름" width="400px" height="87px" />
-        <Input name="이메일" width="400px" height="87px" />
-        <Input name="비밀번호" width="400px" height="87px" type="password" />
+      <InputContainer onSubmit={handleSignUp}>
+        <Input
+          name="이름"
+          width="400px"
+          height="87px"
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+        />
+        <Input
+          name="이메일"
+          width="400px"
+          height="87px"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Input
+          name="비밀번호"
+          width="400px"
+          height="87px"
+          type="password"
+          value={signupCode}
+          onChange={(e) => setSignupCode(e.target.value)}
+        />
         <LoginButton>회원가입</LoginButton>
       </InputContainer>
     </Container>
@@ -48,7 +93,7 @@ const TextContainer = styled.div`
   height: 60px;
 `;
 
-const InputContainer = styled.div`
+const InputContainer = styled.form`
   display: flex;
   flex-direction: column;
   padding: 20px 0px;

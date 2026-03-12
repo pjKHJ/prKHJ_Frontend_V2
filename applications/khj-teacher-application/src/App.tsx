@@ -1,6 +1,9 @@
 import { Global, css } from "@emotion/react";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 const globalStyle = css`
   * {
@@ -15,9 +18,9 @@ const globalStyle = css`
 
 export default function App() {
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Global styles={globalStyle} />
       <RouterProvider router={router} />
-    </>
+    </QueryClientProvider>
   );
 }

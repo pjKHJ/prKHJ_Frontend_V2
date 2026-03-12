@@ -1,20 +1,31 @@
 import styled from "@emotion/styled";
 
+interface InputProps {
+  name: string;
+  width?: string;
+  height?: string;
+  type?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
 export default function Input({
   name,
   width,
   height,
   type,
-}: {
-  name: string;
-  width?: string;
-  height?: string;
-  type?: string;
-}) {
+  value,
+  onChange,
+}: InputProps) {
   return (
     <InputSubContainer width={width} height={height}>
       <InputLabel>{name}</InputLabel>
-      <InputBar type={type || "text"} placeholder={`${name}을 입력해주세요`} />
+      <InputBar
+        type={type || "text"}
+        placeholder={`${name}을 입력해주세요`}
+        value={value}
+        onChange={onChange}
+      />
     </InputSubContainer>
   );
 }

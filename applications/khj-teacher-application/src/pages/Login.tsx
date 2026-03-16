@@ -1,7 +1,11 @@
 import styled from "@emotion/styled";
+import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <Container>
       <TextContainer>
@@ -9,8 +13,23 @@ export default function Login() {
         <p>이메일/비밀번호 로그인</p>
       </TextContainer>
       <InputContainer>
-        <Input name="이메일" width="400px" height="87px" />
-        <Input name="비밀번호" width="400px" height="87px" type="password" />
+        <Input
+          name="이메일"
+          width="400px"
+          height="87px"
+          value={email}
+          next="을"
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <Input
+          name="비밀번호"
+          width="400px"
+          height="87px"
+          type="password"
+          value={password}
+          next="를"
+          onChange={(e) => setPassword(e.target.value)}
+        />
         <SaveEmailContainer>
           <SaveEmailCheckbox type="checkbox" />
           <span>이메일 저장</span>
@@ -76,7 +95,7 @@ const TextContainer = styled.div`
   }
 `;
 
-const InputContainer = styled.div`
+const InputContainer = styled.form`
   display: flex;
   flex-direction: column;
   padding: 0px;

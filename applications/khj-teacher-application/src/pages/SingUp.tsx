@@ -35,26 +35,29 @@ export default function SignUp() {
       </TextContainer>
       <InputContainer onSubmit={handleSignUp}>
         <Input
-          name="이름"
+          name="아이디"
           width="400px"
           height="87px"
           value={userId}
+          next="를"
           onChange={(e) => setUserId(e.target.value)}
         />
         <Input
-          name="이메일"
+          name="인증코드"
+          next="를"
           width="400px"
           height="87px"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={signupCode}
+          onChange={(e) => setSignupCode(e.target.value)}
         />
         <Input
           name="비밀번호"
           width="400px"
           height="87px"
           type="password"
-          value={signupCode}
-          onChange={(e) => setSignupCode(e.target.value)}
+          value={password}
+          next="를"
+          onChange={(e) => setPassword(e.target.value)}
         />
         <LoginButton>회원가입</LoginButton>
       </InputContainer>
@@ -91,13 +94,17 @@ const TextContainer = styled.div`
 
   width: 650px;
   height: 60px;
+  h1 {
+    font-size: 40px;
+    line-height: 150%;
+  }
 `;
 
 const InputContainer = styled.form`
   display: flex;
   flex-direction: column;
   padding: 20px 0px;
-  gap: 32px;
+  gap: 24px;
   margin-top: 30px;
 
   width: 400px;
@@ -114,7 +121,7 @@ const LoginButton = styled.button`
   padding: 0px 20px;
   gap: 4px;
 
-  margin-top: -8px;
+  margin-top: 20px;
 
   width: 400px;
   min-width: 90px;
@@ -131,4 +138,6 @@ const LoginButton = styled.button`
   line-height: 150%;
 
   color: #ffffff;
+
+  cursor: pointer;
 `;

@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 
 interface InputProps {
   name: string;
+  next: string;
   width?: string;
   height?: string;
   type?: string;
@@ -11,6 +12,7 @@ interface InputProps {
 
 export default function Input({
   name,
+  next,
   width,
   height,
   type,
@@ -22,7 +24,7 @@ export default function Input({
       <InputLabel>{name}</InputLabel>
       <InputBar
         type={type || "text"}
-        placeholder={`${name}을 입력해주세요`}
+        placeholder={`${name}${next} 입력해주세요`}
         value={value}
         onChange={onChange}
       />

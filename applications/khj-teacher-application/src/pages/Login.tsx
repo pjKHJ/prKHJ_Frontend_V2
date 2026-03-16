@@ -1,10 +1,34 @@
 import styled from "@emotion/styled";
 import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
+import { useMutation } from "@tanstack/react-query";
+import { login, type LoginRequest, type LoginResponse } from "../apis/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const navigate = useNavigate();
+
+  const { mutate: loginMutate } = useMutation({
+    mutationFn: (data: LoginRequest) => login(data),
+    onSuccess: (data: LoginResponse) => {
+      console.log("로그인 성공:", data);
+      navigate("/");
+    },
+    onError: (error) => {
+      console.error("로그인 실패:", error);
+    },
+  });
+
+  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    loginMutate({
+      userName: email,
+      password: password,
+    });
+  };
 
   return (
     <Container>
@@ -12,7 +36,7 @@ export default function Login() {
         <h1>Daedeok Software Coding Test System 로그인</h1>
         <p>이메일/비밀번호 로그인</p>
       </TextContainer>
-      <InputContainer>
+      <InputContainer onSubmit={handleLogin}>
         <Input
           name="이메일"
           width="400px"
@@ -100,10 +124,10 @@ const InputContainer = styled.form`
   flex-direction: column;
   padding: 0px;
   gap: 24px;
-  margin-top: 40px;
+  margin-top: 60px;
 
   width: 400px;
-  height: 368px;
+  height: 348px;
 
   border-bottom: 1px solid #8a949e;
 `;
@@ -157,4 +181,6 @@ const LoginButton = styled.button`
   line-height: 150%;
 
   color: #ffffff;
+
+  cursor: pointer;
 `;

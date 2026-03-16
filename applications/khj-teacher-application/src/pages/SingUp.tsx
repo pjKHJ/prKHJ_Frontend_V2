@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
 import { useMutation } from "@tanstack/react-query";
-import { signUp, type SignUpRequest } from "../apis/auth";
+import { signUp, type SignUpRequest, type SignUpResponse } from "../apis/auth";
 
 export default function SignUp() {
   const [userId, setUserId] = useState("");
@@ -11,7 +11,7 @@ export default function SignUp() {
 
   const { mutate: signUpMutate } = useMutation({
     mutationFn: (data: SignUpRequest) => signUp(data),
-    onSuccess: (data) => {
+    onSuccess: (data: SignUpResponse) => {
       console.log("회원가입 성공:", data);
     },
     onError: (error) => {

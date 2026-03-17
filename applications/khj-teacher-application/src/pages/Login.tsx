@@ -6,14 +6,22 @@ import { login, type LoginRequest, type LoginResponse } from "../apis/auth";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const savedEmail = localStorage.getItem("savedEmail") || "";
+  const [email, setEmail] = useState(savedEmail);
   const [password, setPassword] = useState("");
+
+  const [saveEmail, setSaveEmail] = useState(!!savedEmail);
 
   const navigate = useNavigate();
 
   const { mutate: loginMutate } = useMutation({
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (data: LoginResponse) => {
+      if (saveEmail) {
+        localStorage.setItem("savedEmail", email);
+      } else {
+        localStorage.removeItem("savedEmail");
+      }
       console.log("로그인 성공:", data);
       navigate("/");
     },
@@ -55,10 +63,14 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
         <SaveEmailContainer>
-          <SaveEmailCheckbox type="checkbox" />
+          <SaveEmailCheckbox
+            type="checkbox"
+            checked={saveEmail}
+            onChange={(e) => setSaveEmail(e.target.checked)}
+          />
           <span>이메일 저장</span>
         </SaveEmailContainer>
-        <LoginButton>로그인</LoginButton>
+        <LoginButton type="submit">로그인</LoginButton>
       </InputContainer>
     </Container>
   );
@@ -138,7 +150,7 @@ const SaveEmailContainer = styled.div`
   flex-direction: row;
   align-items: center;
   padding: 0px;
-  gap: 3px;
+  gap: 8px;
 
   width: 320px;
   height: 26px;

@@ -10,7 +10,7 @@ const queryClient = new QueryClient({
       retry: 1, // 실패 시 1회 재시도
     },
     mutations: {
-      retry: 0, // 실패 시 1회 재시도
+      retry: 0,
     },
   },
 });

@@ -3,7 +3,17 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5분
+      retry: 1, // 실패 시 1회 재시도
+    },
+    mutations: {
+      retry: 0, // 실패 시 1회 재시도
+    },
+  },
+});
 
 const globalStyle = css`
   * {

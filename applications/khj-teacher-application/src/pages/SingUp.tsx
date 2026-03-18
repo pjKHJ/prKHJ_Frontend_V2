@@ -21,10 +21,17 @@ export default function SignUp() {
 
   const handleSignUp = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const normalizedUserId = userId.trim();
+    const normalizedSignupCode = signupCode.trim();
+
+    if (!normalizedUserId || !password || !normalizedSignupCode) {
+      return;
+    }
+
     signUpMutate({
-      userName: userId,
+      userName: normalizedUserId,
       password: password,
-      signupCode: signupCode,
+      signupCode: normalizedSignupCode,
     });
   };
 

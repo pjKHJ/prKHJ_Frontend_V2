@@ -4,19 +4,26 @@ import { Input } from "@khj/user-interfaces";
 import { useMutation } from "@tanstack/react-query";
 import { login, type LoginRequest, type LoginResponse } from "../apis/auth";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 
 export default function Login() {
-  const savedEmail = localStorage.getItem("savedEmail") || "";
-  const [email, setEmail] = useState(savedEmail);
+  const [email, setEmail] = useState(
+    () => localStorage.getItem("savedEmail") || "",
+  );
   const [password, setPassword] = useState("");
 
-  const [saveEmail, setSaveEmail] = useState(!!savedEmail);
+  const [saveEmail, setSaveEmail] = useState(
+    !!localStorage.getItem("savedEmail"),
+  );
 
   const navigate = useNavigate();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const { mutate: loginMutate } = useMutation({
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (data: LoginResponse) => {
+      setAccessToken(data.accessToken);
+
       if (saveEmail) {
         localStorage.setItem("savedEmail", email);
       } else {

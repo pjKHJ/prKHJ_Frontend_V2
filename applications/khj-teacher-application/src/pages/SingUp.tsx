@@ -1,16 +1,71 @@
 import styled from "@emotion/styled";
+import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
+import { useMutation } from "@tanstack/react-query";
+import { signUp, type SignUpRequest, type SignUpResponse } from "../apis/auth";
 
 export default function SignUp() {
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
+  const [signupCode, setSignupCode] = useState("");
+
+  const { mutate: signUpMutate } = useMutation({
+    mutationFn: (data: SignUpRequest) => signUp(data),
+    onSuccess: (data: SignUpResponse) => {
+      console.log("회원가입 성공:", data);
+    },
+    onError: (error) => {
+      console.error("회원가입 실패:", error);
+    },
+  });
+
+  const handleSignUp = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const normalizedUserId = userId.trim();
+    const normalizedSignupCode = signupCode.trim();
+
+    if (!normalizedUserId || !password || !normalizedSignupCode) {
+      return;
+    }
+
+    signUpMutate({
+      userName: normalizedUserId,
+      password: password,
+      signupCode: normalizedSignupCode,
+    });
+  };
+
   return (
     <Container>
       <TextContainer>
         <h1>회원가입</h1>
       </TextContainer>
-      <InputContainer>
-        <Input name="이름" width="400px" height="87px" />
-        <Input name="이메일" width="400px" height="87px" />
-        <Input name="비밀번호" width="400px" height="87px" type="password" />
+      <InputContainer onSubmit={handleSignUp}>
+        <Input
+          name="아이디"
+          width="400px"
+          height="87px"
+          value={userId}
+          next="를"
+          onChange={(e) => setUserId(e.target.value)}
+        />
+        <Input
+          name="인증코드"
+          next="를"
+          width="400px"
+          height="87px"
+          value={signupCode}
+          onChange={(e) => setSignupCode(e.target.value)}
+        />
+        <Input
+          name="비밀번호"
+          width="400px"
+          height="87px"
+          type="password"
+          value={password}
+          next="를"
+          onChange={(e) => setPassword(e.target.value)}
+        />
         <LoginButton>회원가입</LoginButton>
       </InputContainer>
     </Container>
@@ -46,13 +101,17 @@ const TextContainer = styled.div`
 
   width: 650px;
   height: 60px;
+  h1 {
+    font-size: 40px;
+    line-height: 150%;
+  }
 `;
 
-const InputContainer = styled.div`
+const InputContainer = styled.form`
   display: flex;
   flex-direction: column;
   padding: 20px 0px;
-  gap: 32px;
+  gap: 24px;
   margin-top: 30px;
 
   width: 400px;
@@ -69,7 +128,7 @@ const LoginButton = styled.button`
   padding: 0px 20px;
   gap: 4px;
 
-  margin-top: -8px;
+  margin-top: 20px;
 
   width: 400px;
   min-width: 90px;
@@ -86,4 +145,6 @@ const LoginButton = styled.button`
   line-height: 150%;
 
   color: #ffffff;
+
+  cursor: pointer;
 `;

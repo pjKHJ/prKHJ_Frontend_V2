@@ -36,9 +36,9 @@ export default function AddStudent() {
       <Title>학생등록</Title>
 
       <TextRecordArea>
-        <Input name="학번" width="210px" height="80px" />
-        <Input name="이름" width="210px" height="80px" />
-        <Input name="아이디" width="280px" height="80px" />
+        <Input name="학번" next="을" width="210px" height="80px" />
+        <Input name="이름" next="을" width="210px" height="80px" />
+        <Input name="아이디" next="를" width="280px" height="80px" />
       </TextRecordArea>
 
       <Divider>

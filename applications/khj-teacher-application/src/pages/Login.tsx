@@ -1,21 +1,83 @@
 import styled from "@emotion/styled";
+import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
+import { useMutation } from "@tanstack/react-query";
+import { login, type LoginRequest, type LoginResponse } from "../apis/auth";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 
 export default function Login() {
+  const [email, setEmail] = useState(
+    () => localStorage.getItem("savedEmail") || "",
+  );
+  const [password, setPassword] = useState("");
+
+  const [saveEmail, setSaveEmail] = useState(
+    !!localStorage.getItem("savedEmail"),
+  );
+
+  const navigate = useNavigate();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+
+  const { mutate: loginMutate } = useMutation({
+    mutationFn: (data: LoginRequest) => login(data),
+    onSuccess: (data: LoginResponse) => {
+      setAccessToken(data.accessToken);
+
+      if (saveEmail) {
+        localStorage.setItem("savedEmail", email);
+      } else {
+        localStorage.removeItem("savedEmail");
+      }
+      console.log("로그인 성공:", data);
+      navigate("/");
+    },
+    onError: (error) => {
+      console.error("로그인 실패:", error);
+    },
+  });
+
+  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    loginMutate({
+      userName: email,
+      password: password,
+    });
+  };
+
   return (
     <Container>
       <TextContainer>
         <h1>Daedeok Software Coding Test System 로그인</h1>
         <p>이메일/비밀번호 로그인</p>
       </TextContainer>
-      <InputContainer>
-        <Input name="이메일" width="400px" height="87px" />
-        <Input name="비밀번호" width="400px" height="87px" type="password" />
+      <InputContainer onSubmit={handleLogin}>
+        <Input
+          name="이메일"
+          width="400px"
+          height="87px"
+          value={email}
+          next="을"
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <Input
+          name="비밀번호"
+          width="400px"
+          height="87px"
+          type="password"
+          value={password}
+          next="를"
+          onChange={(e) => setPassword(e.target.value)}
+        />
         <SaveEmailContainer>
-          <SaveEmailCheckbox type="checkbox" />
+          <SaveEmailCheckbox
+            type="checkbox"
+            checked={saveEmail}
+            onChange={(e) => setSaveEmail(e.target.checked)}
+          />
           <span>이메일 저장</span>
         </SaveEmailContainer>
-        <LoginButton>로그인</LoginButton>
+        <LoginButton type="submit">로그인</LoginButton>
       </InputContainer>
     </Container>
   );
@@ -76,15 +138,15 @@ const TextContainer = styled.div`
   }
 `;
 
-const InputContainer = styled.div`
+const InputContainer = styled.form`
   display: flex;
   flex-direction: column;
   padding: 0px;
   gap: 24px;
-  margin-top: 40px;
+  margin-top: 60px;
 
   width: 400px;
-  height: 368px;
+  height: 348px;
 
   border-bottom: 1px solid #8a949e;
 `;
@@ -95,7 +157,7 @@ const SaveEmailContainer = styled.div`
   flex-direction: row;
   align-items: center;
   padding: 0px;
-  gap: 3px;
+  gap: 8px;
 
   width: 320px;
   height: 26px;
@@ -138,4 +200,6 @@ const LoginButton = styled.button`
   line-height: 150%;
 
   color: #ffffff;
+
+  cursor: pointer;
 `;

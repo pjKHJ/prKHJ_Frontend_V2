@@ -24,7 +24,31 @@ ChartJS.register(
   Legend,
 );
 
-export default function UserInfo() {
+interface UserInfoProps {
+  id: number;
+  studentNumber: number;
+  name: string;
+  bojId: string;
+  tier: string;
+  totalSolved: number;
+  accuracyRate: number;
+  streak: number;
+  maxStreak: number;
+  flame: number;
+}
+
+export default function UserInfo({
+  // id,
+  studentNumber,
+  name,
+  bojId,
+  tier,
+  totalSolved,
+  accuracyRate,
+  streak,
+  // maxStreak,
+  // flame,
+}: UserInfoProps) {
   const WeekDates = useMemo(() => {
     const curr = new Date();
     const first = curr.getDate() - curr.getDay();
@@ -124,8 +148,10 @@ export default function UserInfo() {
   return (
     <Wrapper>
       <ChartWrapper>
-        <Name>1310 전재준</Name>
-        <Day>D+ 9</Day>
+        <Name>
+          {studentNumber || 0} {name || "이름 없음"}
+        </Name>
+        <Day>D+ {streak || 0}</Day>
 
         <ChartInnerContainer>
           <Line data={chartData} options={chartOptions} />
@@ -140,21 +166,21 @@ export default function UserInfo() {
       <SidebarWrapper>
         <Box>
           <p>백준 ID</p>
-          <span>jaejun090210</span>
+          <span>{bojId || "ID 없음"}</span>
         </Box>
         <Box>
           <p>Solved.ac 랭크</p>
-          <span>다이아2</span>
+          <span>{tier || "랭크 없음"}</span>
         </Box>
         <TotalBox>
           <p>Total</p>
-          <span>1000개</span>
+          <span>{totalSolved || 0}</span>
           <p>Today</p>
-          <span>10개</span>
+          <span>{totalSolved || 0}</span>
         </TotalBox>
         <Box>
           <p>정답률</p>
-          <span>99%</span>
+          <span>{accuracyRate || 0}%</span>
         </Box>
         <ComebackBox>
           <ComebackList to="/list">리스트로 돌아가기</ComebackList>

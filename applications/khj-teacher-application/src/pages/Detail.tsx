@@ -2,11 +2,17 @@ import { UserInfo } from "@khj/user-interfaces";
 import styled from "@emotion/styled";
 import { useParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { getUserInfo, type UserInfoResponse } from "../apis/data";
+import {
+  getUserGrass,
+  getUserInfo,
+  type UserGrassResponse,
+  type UserInfoResponse,
+} from "../apis/data";
 import { useState, useEffect } from "react";
 
 export default function Detail() {
   const [userInfo, setUserInfo] = useState<UserInfoResponse | null>(null);
+  const [userGrass, setUserGrass] = useState<UserGrassResponse["grass"]>([]);
 
   const { id } = useParams();
 
@@ -21,11 +27,23 @@ export default function Detail() {
     },
   });
 
+  const { mutate: getUserGrassMutate } = useMutation({
+    mutationFn: (id: number) => getUserGrass(id, 7),
+    onSuccess: (data: UserGrassResponse) => {
+      setUserGrass(data.grass ?? []);
+    },
+    onError: (error) => {
+      console.error("유저 grass 조회 실패:", error);
+      setUserGrass([]);
+    },
+  });
+
   useEffect(() => {
     if (id) {
       getUserInfoMutate(Number(id));
+      getUserGrassMutate(Number(id));
     }
-  }, [id, getUserInfoMutate]);
+  }, [id, getUserGrassMutate, getUserInfoMutate]);
 
   return (
     <Wrapper>
@@ -40,6 +58,7 @@ export default function Detail() {
         streak={userInfo?.streak || 0}
         maxStreak={userInfo?.maxStreak || 0}
         flame={userInfo?.flame || 0}
+        grass={userGrass}
       />
     </Wrapper>
   );

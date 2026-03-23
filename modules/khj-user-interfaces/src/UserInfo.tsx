@@ -35,10 +35,13 @@ interface UserInfoProps {
   streak: number;
   maxStreak: number;
   flame: number;
+  grass: {
+    date: string;
+    value: number;
+  }[];
 }
 
 export default function UserInfo({
-  // id,
   studentNumber,
   name,
   bojId,
@@ -46,22 +49,43 @@ export default function UserInfo({
   totalSolved,
   accuracyRate,
   streak,
-  // maxStreak,
-  // flame,
+  grass,
 }: UserInfoProps) {
-  const WeekDates = useMemo(() => {
+  const fallbackWeekDates = useMemo(() => {
     const curr = new Date();
-    const first = curr.getDate() - curr.getDay();
 
     return Array.from({ length: 7 }, (_, i) => {
-      const day = new Date(curr.setDate(first + i));
+      const day = new Date(
+        curr.getFullYear(),
+        curr.getMonth(),
+        curr.getDate() - curr.getDay() + i,
+      );
       return `${(day.getMonth() + 1).toString().padStart(2, "0")}/${day.getDate().toString().padStart(2, "0")}`;
     });
   }, []);
 
+  const WeekDates = useMemo(() => {
+    if (grass.length > 0) {
+      return grass.map(({ date }) => {
+        const parsed = new Date(date);
+        if (Number.isNaN(parsed.getTime())) {
+          return date;
+        }
+
+        return `${(parsed.getMonth() + 1).toString().padStart(2, "0")}/${parsed.getDate().toString().padStart(2, "0")}`;
+      });
+    }
+
+    return fallbackWeekDates;
+  }, [fallbackWeekDates, grass]);
+
   const solvedData = useMemo(() => {
-    return [2, 3, 0, 4, 2, 5, 3];
-  }, []);
+    if (grass.length > 0) {
+      return grass.map(({ value }) => value ?? 0);
+    }
+
+    return Array.from({ length: 7 }, () => 0);
+  }, [grass]);
 
   const chartData = useMemo(() => {
     return {

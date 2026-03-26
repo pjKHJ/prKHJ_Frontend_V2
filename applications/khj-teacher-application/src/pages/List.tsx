@@ -1,7 +1,10 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { BoardList } from "@khj/user-interfaces";
 import { SearchIcon } from "@khj/user-interfaces";
+import { getStudents, type StudentItemResponse } from "../apis/data";
 
 function List() {
   const tierMap = {
@@ -39,67 +42,126 @@ function List() {
     31: "Master",
   };
 
-  const dummyItems = [
-    {
-      student_no: "10101",
-      name: "김철수",
-      id: "chulsoo01",
-      tier: "12",
-      solved_total: 320,
-      accuracy_pct: 86,
-      solved_today: 3,
-      streak_days: 14,
-    },
-    {
-      student_no: "10102",
-      name: "이영희",
-      id: "younghee02",
-      tier: "16",
-      solved_total: 410,
-      accuracy_pct: 90,
-      solved_today: 5,
-      streak_days: 22,
-    },
-    {
-      student_no: "10103",
-      name: "박민수",
-      id: "minsoo03",
-      tier: "9",
-      solved_total: 205,
-      accuracy_pct: 78,
-      solved_today: 2,
-      streak_days: 7,
-    },
-    {
-      student_no: "10104",
-      name: "최지훈",
-      id: "jihoon04",
-      tier: "21",
-      solved_total: 580,
-      accuracy_pct: 93,
-      solved_today: 8,
-      streak_days: 45,
-    },
-    {
-      student_no: "10105",
-      name: "정다은",
-      id: "daeun05",
-      tier: "6",
-      solved_total: 150,
-      accuracy_pct: 72,
-      solved_today: 1,
-      streak_days: 3,
-    },
-  ];
-
-  const [filteredItems, setFilteredItems] = useState(dummyItems);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [grade, setGrade] = useState("");
   const [classNum, setClassNum] = useState("");
   const [submissionStatus, setSubmissionStatus] = useState("");
   const [sortKey, setSortKey] = useState(""); // 선택한 정렬 기준
   const [sortOrder, setSortOrder] = useState("asc"); // asc | desc
+
+  const errorMessages: Record<string, string> = {
+    GLB_400: "잘못된 요청입니다. 검색 또는 정렬 값을 확인해 주세요.",
+    GLB_500: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  };
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["students"],
+    queryFn: getStudents,
+  });
+
+  const mappedItems = useMemo(() => {
+    const students = data?.students ?? [];
+
+    const normalizeAccuracy = (value: number) => Number(value.toFixed(1));
+
+    const items = students.map((student: StudentItemResponse) => ({
+      student_no: student.studentNumber,
+      name: student.name,
+      id: student.bojId,
+      tier: String(student.tier),
+      solved_total: student.totalSolved,
+      accuracy_pct: normalizeAccuracy(student.accuracyRate),
+      solved_today: student.todaySolved,
+      streak_days: student.streak,
+      max_streak: student.maxStreak,
+    }));
+
+    const filtered = items.filter((item) => {
+      if (!searchTerm.trim()) return true;
+      const keyword = searchTerm.toLowerCase();
+      return (
+        item.student_no.toLowerCase().includes(keyword) ||
+        item.name.toLowerCase().includes(keyword)
+      );
+    });
+
+    if (!sortKey) return filtered;
+
+    const sorted = [...filtered].sort((a, b) => {
+      const aValue = a[sortKey as keyof typeof a];
+      const bValue = b[sortKey as keyof typeof b];
+
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+      }
+
+      const aStr = String(aValue);
+      const bStr = String(bValue);
+      return sortOrder === "asc"
+        ? aStr.localeCompare(bStr)
+        : bStr.localeCompare(aStr);
+    });
+
+    return sorted;
+  }, [data, searchTerm, sortKey, sortOrder]);
+
+  const errorText = useMemo(() => {
+    if (!isError) return "";
+    if (axios.isAxiosError(error)) {
+      const code = (error.response?.data as { code?: string } | undefined)
+        ?.code;
+      if (code && errorMessages[code]) return errorMessages[code];
+      return "학생 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
+    }
+    return "학생 목록을 불러오지 못했습니다.";
+  }, [error, errorMessages, isError]);
+
+  const handleExcelDownload = () => {
+    if (!mappedItems.length) {
+      alert("다운로드할 데이터가 없습니다.");
+      return;
+    }
+
+    const headers = [
+      "학번",
+      "이름",
+      "BOJ ID",
+      "티어",
+      "총 풀이",
+      "정답률(%)",
+      "오늘 풀이",
+      "연속일수",
+      "최대 연속일수",
+    ];
+
+    const rows = mappedItems.map((item) => [
+      item.student_no,
+      item.name,
+      item.id,
+      item.tier,
+      item.solved_total,
+      item.accuracy_pct,
+      item.solved_today,
+      item.streak_days,
+      item.max_streak,
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "students.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <Content>
@@ -125,9 +187,19 @@ function List() {
           </SearchInputContainer>
         </BoardTitle>
 
-        {filteredItems.length > 0 ? (
+        {isLoading && (
+          <InfoBox role="status">학생 목록을 불러오는 중...</InfoBox>
+        )}
+
+        {isError && !isLoading && (
+          <InfoBox role="alert" variant="error">
+            {errorText}
+          </InfoBox>
+        )}
+
+        {!isLoading && !isError && mappedItems.length > 0 ? (
           <BoardList
-            items={filteredItems.map((item) => ({
+            items={mappedItems.map((item) => ({
               ...item,
               tierName:
                 tierMap[parseInt(item.tier) as keyof typeof tierMap] ||
@@ -139,14 +211,14 @@ function List() {
             style={{
               padding: "40px 20px",
               textAlign: "center",
-              color: "#555", // 기본 텍스트 색
+              color: "#555",
               fontSize: "18px",
               fontWeight: "500",
-              backgroundColor: "#fdfdfd", // 밝은 배경
-              border: "2px solid #CDD1D5", // primary 컬러 테두리
+              backgroundColor: "#fdfdfd",
+              border: "2px solid #CDD1D5",
               borderRadius: "12px",
               marginTop: "20px",
-              boxShadow: "0 6px 12px rgba(0,0,0,0.1)", // 그림자 더 진하게
+              boxShadow: "0 6px 12px rgba(0,0,0,0.1)",
               lineHeight: "1.6",
             }}
           >
@@ -263,7 +335,6 @@ function List() {
               setSubmissionStatus("");
               setSortKey("");
               setSortOrder("asc");
-              setFilteredItems(dummyItems);
             }}
           >
             초기화
@@ -271,11 +342,7 @@ function List() {
         </SectionContainer>
         <SectionContainer>
           <FilterLabel>Excel Download</FilterLabel>
-          <ExcelButton
-            onClick={() => {
-              console.log("[Excel Download] Items:", filteredItems);
-            }}
-          >
+          <ExcelButton onClick={handleExcelDownload}>
             Excel Download
           </ExcelButton>
         </SectionContainer>
@@ -318,7 +385,6 @@ const BoardTitle = styled.h1`
   margin-bottom: 50px;
 `;
 
-// --- 검색 및 필터 컴포넌트 스타일 ---
 const SearchFilterBox = styled.div`
   width: 255px;
   display: flex;
@@ -499,6 +565,16 @@ const ExcelButton = styled(Button)`
   &:active {
     background-color: #083891;
   }
+`;
+
+const InfoBox = styled.div<{ variant?: "error" | "info" }>`
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: ${({ variant }) => (variant === "error" ? "#fff4f4" : "#eef3fc")};
+  border: 1px solid
+    ${({ variant }) => (variant === "error" ? "#f5c2c7" : "#d0dff8")};
+  color: #1e2124;
 `;
 
 export default List;

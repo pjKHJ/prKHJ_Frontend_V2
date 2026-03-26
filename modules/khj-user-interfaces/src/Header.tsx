@@ -13,7 +13,7 @@ export default function Header() {
         <UpText to="/">About</UpText>
       </UpContainer>
       <DownContainer>
-        <DownText to="/">데이터 조회</DownText>
+        <DownText to="/list">데이터 조회</DownText>
         <DownText to="/add-student">학생 등록</DownText>
         <DownText to="/delete-student">학생 삭제</DownText>
       </DownContainer>

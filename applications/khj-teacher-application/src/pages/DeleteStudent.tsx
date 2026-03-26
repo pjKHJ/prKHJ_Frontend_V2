@@ -1,9 +1,155 @@
 import styled from "@emotion/styled";
+import axios from "axios";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { deleteStudents, type ErrorResponse } from "../apis/management";
+import { useAuthStore } from "../store/authStore";
+
+type InfoVariant = "info" | "success" | "error";
+
+interface InfoState {
+  variant: InfoVariant;
+  title: string;
+  lines: string[];
+}
+
+const defaultInfo: InfoState = {
+  variant: "info",
+  title: "삭제할 학번을 입력하세요",
+  lines: [
+    "쉼표(,)나 공백으로 여러 학번을 한 번에 보낼 수 있습니다.",
+    "삭제 API는 학번(ID) 배열만 받습니다.",
+  ],
+};
+
+const errorMessages: Record<string, InfoState> = {
+  GLB_400: {
+    variant: "error",
+    title: "잘못된 요청입니다",
+    lines: ["학번 형식을 다시 확인해 주세요."],
+  },
+  GLB_500: {
+    variant: "error",
+    title: "서버 오류가 발생했습니다",
+    lines: ["잠시 후 다시 시도해 주세요."],
+  },
+  GLB_403: {
+    variant: "error",
+    title: "권한이 없습니다",
+    lines: ["다시 로그인 후 시도해 주세요."],
+  },
+  STD_400_03: {
+    variant: "error",
+    title: "잘못된 학생 삭제 요청입니다",
+    lines: ["이미 삭제된 학번이 포함됐는지 확인해 주세요."],
+  },
+};
+
+const parseIds = (raw: string): number[] => {
+  const parts = raw
+    .split(/[\s,]+/)
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => Number(value))
+    .filter((value) => Number.isInteger(value) && value > 0);
+
+  return Array.from(new Set(parts));
+};
 
 export default function DeleteStudent() {
+  const navigate = useNavigate();
   const [searchType, setSearchType] = useState<"학번" | "이름">("학번");
   const [searchValue, setSearchValue] = useState("");
+  const [info, setInfo] = useState<InfoState>(defaultInfo);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const logout = useAuthStore((state) => state.logout);
+
+  const { mutate: deleteMutate, isPending } = useMutation({
+    mutationFn: (ids: number[]) => deleteStudents(ids, accessToken),
+    onSuccess: (data) => {
+      setInfo({
+        variant: "success",
+        title: "삭제를 완료했습니다",
+        lines: [
+          data.deletedIds.length
+            ? `삭제된 학생 ID: ${data.deletedIds.join(", ")}`
+            : "삭제된 학생이 없습니다.",
+        ],
+      });
+      setSearchValue("");
+    },
+    onError: (error) => {
+      if (axios.isAxiosError(error)) {
+        const code = (error.response?.data as ErrorResponse | undefined)?.code;
+        const mapped = code ? errorMessages[code] : undefined;
+
+        if (code === "GLB_403") {
+          logout();
+          navigate("/login");
+        }
+
+        setInfo(
+          mapped ?? {
+            variant: "error",
+            title: "삭제에 실패했습니다",
+            lines: ["잠시 후 다시 시도해 주세요."],
+          },
+        );
+        return;
+      }
+
+      if (
+        error instanceof Error &&
+        error.message === "AUTHORIZATION_TOKEN_MISSING"
+      ) {
+        setInfo({
+          variant: "error",
+          title: "로그인이 필요합니다",
+          lines: ["다시 로그인해 주세요."],
+        });
+        logout();
+        navigate("/login");
+        return;
+      }
+
+      setInfo({
+        variant: "error",
+        title: "알 수 없는 오류가 발생했습니다",
+        lines: ["잠시 후 다시 시도해 주세요."],
+      });
+    },
+  });
+
+  const handleDelete = () => {
+    if (searchType === "이름") {
+      setInfo({
+        variant: "error",
+        title: "삭제는 학번(ID)으로만 요청할 수 있습니다",
+        lines: ["학번을 선택한 뒤 숫자만 입력해 주세요."],
+      });
+      return;
+    }
+
+    const ids = parseIds(searchValue);
+
+    if (ids.length === 0) {
+      setInfo({
+        variant: "error",
+        title: "삭제할 학번을 입력해 주세요",
+        lines: ["쉼표나 공백으로 여러 건을 구분할 수 있습니다."],
+      });
+      return;
+    }
+
+    deleteMutate(ids);
+  };
+
+  const handleReset = () => {
+    setSearchValue("");
+    setSearchType("학번");
+    setInfo(defaultInfo);
+  };
 
   return (
     <PageWrapper>
@@ -38,36 +184,53 @@ export default function DeleteStudent() {
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="내용을 입력하세요"
+            placeholder={
+              searchType === "학번"
+                ? "삭제할 학번을 쉼표/공백으로 구분해 입력하세요"
+                : "이름 검색은 지원하지 않습니다"
+            }
           />
-          <SearchButton type="button" aria-label="검색"></SearchButton>
+          <SearchButton
+            type="button"
+            aria-label="검색"
+            onClick={handleDelete}
+            disabled={isPending}
+          ></SearchButton>
         </InputWrapper>
 
-        {/* 검색 결과 없음 안내 */}
-        <InfoBox>
+        {/* 상태 안내 */}
+        <InfoBox variant={info.variant}>
           <InfoHeader>
-            <InfoTitle>검색 결과가 없습니다</InfoTitle>
+            <InfoTitle>{info.title}</InfoTitle>
           </InfoHeader>
           <InfoDescription>
-            내용을 입력했는데 결과가 나오지 않는다면,
+            <InfoList>
+              {info.lines.map((line) => (
+                <InfoListItem key={line}>
+                  <span>-</span>
+                  <span>{line}</span>
+                </InfoListItem>
+              ))}
+            </InfoList>
           </InfoDescription>
-          <Divider />
-          <InfoList>
-            <InfoListItem>
-              <span>-</span>
-              <span>검색 내용을 확인해 주세요</span>
-            </InfoListItem>
-            <InfoListItem>
-              <span>-</span>
-              <span>검색내용과 선택한 형식이 일치하는지 확인해 주세요</span>
-            </InfoListItem>
-          </InfoList>
         </InfoBox>
 
         {/* 버튼 영역 */}
         <ButtonArea>
-          <CancelButton>취소하기</CancelButton>
-          <SubmitButton>삭제하기</SubmitButton>
+          <CancelButton
+            type="button"
+            onClick={handleReset}
+            disabled={isPending}
+          >
+            취소하기
+          </CancelButton>
+          <SubmitButton
+            type="button"
+            onClick={handleDelete}
+            disabled={isPending}
+          >
+            {isPending ? "삭제 중..." : "삭제하기"}
+          </SubmitButton>
         </ButtonArea>
       </Container>
     </PageWrapper>
@@ -80,7 +243,7 @@ const PageWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 160px);  
+  min-height: calc(100vh - 160px);
   padding: 64px 16px;
 `;
 
@@ -179,11 +342,22 @@ const SearchButton = styled.button`
   }
 `;
 
-const InfoBox = styled.div`
+const InfoBox = styled.div<{ variant: InfoVariant }>`
   width: 100%;
   padding: 20px;
-  background: #eef3fc;
-  border: 1px solid #d0dff8;
+  background: ${({ variant }) =>
+    variant === "success"
+      ? "#e7f4ec"
+      : variant === "error"
+        ? "#fff4f4"
+        : "#eef3fc"};
+  border: 1px solid
+    ${({ variant }) =>
+      variant === "success"
+        ? "#b7e0c6"
+        : variant === "error"
+          ? "#f5c2c7"
+          : "#d0dff8"};
   border-radius: 8px;
   margin-bottom: 32px;
   box-sizing: border-box;
@@ -202,16 +376,11 @@ const InfoTitle = styled.span`
   color: #1a1a1a;
 `;
 
-const InfoDescription = styled.p`
+const InfoDescription = styled.div`
   font-size: 14px;
   line-height: 1.6;
   color: #5f6b76;
-  margin: 0 0 12px 0;
-`;
-
-const Divider = styled.div`
-  border-top: 1px dashed #c0ccdb;
-  margin-bottom: 12px;
+  margin: 0;
 `;
 
 const InfoList = styled.ul`
@@ -239,7 +408,7 @@ const ButtonArea = styled.div`
   align-items: center;
 `;
 
-const CancelButton = styled.button`
+const CancelButton = styled.button<{ disabled?: boolean }>`
   width: 110px;
   height: 44px;
   background: #8a949e;
@@ -248,9 +417,11 @@ const CancelButton = styled.button`
   color: #ffffff;
   font-size: 14px;
   cursor: pointer;
+  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
+  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
 `;
 
-const SubmitButton = styled.button`
+const SubmitButton = styled.button<{ disabled?: boolean }>`
   width: 110px;
   height: 44px;
   background: #256ef4;
@@ -260,4 +431,6 @@ const SubmitButton = styled.button`
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
+  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
 `;

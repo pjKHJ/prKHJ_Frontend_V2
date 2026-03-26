@@ -7,6 +7,7 @@ export interface UserInfoResponse {
   bojId: string;
   tier: string;
   totalSolved: number;
+  todaySolved?: number;
   accuracyRate: number;
   streak: number;
   maxStreak: number;

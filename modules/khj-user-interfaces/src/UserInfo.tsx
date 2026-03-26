@@ -25,16 +25,14 @@ ChartJS.register(
 );
 
 interface UserInfoProps {
-  id: number;
   studentNumber: number;
   name: string;
   bojId: string;
   tier: string;
   totalSolved: number;
+  todaySolved?: number;
   accuracyRate: number;
   streak: number;
-  maxStreak: number;
-  flame: number;
   grass: {
     date: string;
     value: number;
@@ -47,6 +45,7 @@ export default function UserInfo({
   bojId,
   tier,
   totalSolved,
+  todaySolved,
   accuracyRate,
   streak,
   grass,
@@ -200,7 +199,7 @@ export default function UserInfo({
           <p>Total</p>
           <span>{totalSolved || 0}</span>
           <p>Today</p>
-          <span>{totalSolved || 0}</span>
+          <span>{todaySolved || 0}</span>
         </TotalBox>
         <Box>
           <p>정답률</p>

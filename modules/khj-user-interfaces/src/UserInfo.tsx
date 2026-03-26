@@ -24,20 +24,67 @@ ChartJS.register(
   Legend,
 );
 
-export default function UserInfo() {
-  const WeekDates = useMemo(() => {
+interface UserInfoProps {
+  studentNumber: number;
+  name: string;
+  bojId: string;
+  tier: string;
+  totalSolved: number;
+  todaySolved?: number;
+  accuracyRate: number;
+  streak: number;
+  grass: {
+    date: string;
+    value: number;
+  }[];
+}
+
+export default function UserInfo({
+  studentNumber,
+  name,
+  bojId,
+  tier,
+  totalSolved,
+  todaySolved,
+  accuracyRate,
+  streak,
+  grass,
+}: UserInfoProps) {
+  const fallbackWeekDates = useMemo(() => {
     const curr = new Date();
-    const first = curr.getDate() - curr.getDay();
 
     return Array.from({ length: 7 }, (_, i) => {
-      const day = new Date(curr.setDate(first + i));
+      const day = new Date(
+        curr.getFullYear(),
+        curr.getMonth(),
+        curr.getDate() - curr.getDay() + i,
+      );
       return `${(day.getMonth() + 1).toString().padStart(2, "0")}/${day.getDate().toString().padStart(2, "0")}`;
     });
   }, []);
 
+  const WeekDates = useMemo(() => {
+    if (grass.length > 0) {
+      return grass.map(({ date }) => {
+        const parsed = new Date(date);
+        if (Number.isNaN(parsed.getTime())) {
+          return date;
+        }
+
+        return `${(parsed.getMonth() + 1).toString().padStart(2, "0")}/${parsed.getDate().toString().padStart(2, "0")}`;
+      });
+    }
+
+    return fallbackWeekDates;
+  }, [fallbackWeekDates, grass]);
+
   const solvedData = useMemo(() => {
-    return [2, 3, 0, 4, 2, 5, 3];
-  }, []);
+    if (grass.length > 0) {
+      return grass.map(({ value }) => value ?? 0);
+    }
+
+    return Array.from({ length: 7 }, () => 0);
+  }, [grass]);
 
   const chartData = useMemo(() => {
     return {
@@ -124,8 +171,10 @@ export default function UserInfo() {
   return (
     <Wrapper>
       <ChartWrapper>
-        <Name>1310 전재준</Name>
-        <Day>D+ 9</Day>
+        <Name>
+          {studentNumber || 0} {name || "이름 없음"}
+        </Name>
+        <Day>D+ {streak || 0}</Day>
 
         <ChartInnerContainer>
           <Line data={chartData} options={chartOptions} />
@@ -140,21 +189,21 @@ export default function UserInfo() {
       <SidebarWrapper>
         <Box>
           <p>백준 ID</p>
-          <span>jaejun090210</span>
+          <span>{bojId || "ID 없음"}</span>
         </Box>
         <Box>
           <p>Solved.ac 랭크</p>
-          <span>다이아2</span>
+          <span>{tier || "랭크 없음"}</span>
         </Box>
         <TotalBox>
           <p>Total</p>
-          <span>1000개</span>
+          <span>{totalSolved || 0}</span>
           <p>Today</p>
-          <span>10개</span>
+          <span>{todaySolved || 0}</span>
         </TotalBox>
         <Box>
           <p>정답률</p>
-          <span>99%</span>
+          <span>{accuracyRate || 0}%</span>
         </Box>
         <ComebackBox>
           <ComebackList to="/list">리스트로 돌아가기</ComebackList>

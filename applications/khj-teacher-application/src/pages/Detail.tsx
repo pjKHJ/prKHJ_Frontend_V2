@@ -1,54 +1,37 @@
 import { UserInfo } from "@khj/user-interfaces";
 import styled from "@emotion/styled";
 import { useParams } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   getUserGrass,
   getUserInfo,
-  type UserGrassResponse,
+  type GrassItem,
   type UserInfoResponse,
 } from "../apis/data";
-import { useState, useEffect } from "react";
 
 export default function Detail() {
-  const [userInfo, setUserInfo] = useState<UserInfoResponse | null>(null);
-  const [userGrass, setUserGrass] = useState<UserGrassResponse["grass"]>([]);
-
   const { id } = useParams();
+  const numericId = Number(id);
+  const isValidId = Number.isFinite(numericId);
 
-  const { mutate: getUserInfoMutate } = useMutation({
-    mutationFn: (id: number) => getUserInfo(id),
-    onSuccess: (data: UserInfoResponse) => {
-      console.log("유저 정보 조회 성공:", data);
-      setUserInfo(data);
-    },
-    onError: (error) => {
-      console.error("유저 정보 조회 실패:", error);
-    },
+  const { data: userInfo } = useQuery<UserInfoResponse>({
+    queryKey: ["userInfo", id],
+    queryFn: () => getUserInfo(numericId),
+    enabled: isValidId,
   });
 
-  const { mutate: getUserGrassMutate } = useMutation({
-    mutationFn: (id: number) => getUserGrass(id, 7),
-    onSuccess: (data: UserGrassResponse) => {
-      setUserGrass(data.grass ?? []);
-    },
-    onError: (error) => {
-      console.error("유저 grass 조회 실패:", error);
-      setUserGrass([]);
-    },
+  const { data: userGrassResponse } = useQuery({
+    queryKey: ["userGrass", id, 7],
+    queryFn: () => getUserGrass(numericId, 7),
+    enabled: isValidId,
   });
 
-  useEffect(() => {
-    if (id) {
-      getUserInfoMutate(Number(id));
-      getUserGrassMutate(Number(id));
-    }
-  }, [id, getUserGrassMutate, getUserInfoMutate]);
+  const userGrass: GrassItem[] = userGrassResponse?.grass ?? [];
 
   return (
     <Wrapper>
       <UserInfo
-        id={Number(id)}
+        id={numericId}
         studentNumber={userInfo?.studentNumber || 0}
         name={userInfo?.name || ""}
         bojId={userInfo?.bojId || ""}

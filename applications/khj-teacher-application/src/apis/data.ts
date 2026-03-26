@@ -13,7 +13,7 @@ export interface UserInfoResponse {
   flame: number;
 }
 
-interface GrassItem {
+export interface GrassItem {
   date: string;
   value: number;
 }

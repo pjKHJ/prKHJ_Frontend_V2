@@ -50,14 +50,6 @@ export default function SignUp() {
           onChange={(e) => setUserId(e.target.value)}
         />
         <Input
-          name="인증코드"
-          next="를"
-          width="400px"
-          height="87px"
-          value={signupCode}
-          onChange={(e) => setSignupCode(e.target.value)}
-        />
-        <Input
           name="비밀번호"
           width="400px"
           height="87px"
@@ -65,6 +57,14 @@ export default function SignUp() {
           value={password}
           next="를"
           onChange={(e) => setPassword(e.target.value)}
+        />
+        <Input
+          name="인증코드"
+          next="를"
+          width="400px"
+          height="87px"
+          value={signupCode}
+          onChange={(e) => setSignupCode(e.target.value)}
         />
         <LoginButton>회원가입</LoginButton>
       </InputContainer>

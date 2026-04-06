@@ -61,14 +61,18 @@ const parseStudentFile = async (file: File): Promise<BulkStudentItem[]> => {
   const hasAllHeaders =
     studentNumberIndex >= 0 && nameIndex >= 0 && bojIdIndex >= 0;
 
+  if (!hasAllHeaders) {
+    throw new Error(
+      "학번, 이름, 아이디 열을 찾을 수 없습니다. 샘플 양식을 사용해주세요.",
+    );
+  }
+
   const parsed = rows
     .slice(1)
     .map((row) => {
-      const studentNumber = String(
-        hasAllHeaders ? row[studentNumberIndex] : row[0],
-      ).trim();
-      const name = String(hasAllHeaders ? row[nameIndex] : row[1]).trim();
-      const bojId = String(hasAllHeaders ? row[bojIdIndex] : row[2]).trim();
+      const studentNumber = String(row[studentNumberIndex]).trim();
+      const name = String(row[nameIndex]).trim();
+      const bojId = String(row[bojIdIndex]).trim();
 
       return {
         studentNumber,
@@ -110,10 +114,14 @@ export default function AddStudent() {
   const accessToken = useAuthStore((state) => state.accessToken);
 
   const hasTextInput =
-    studentNumber.trim().length > 0 ||
-    studentName.trim().length > 0 ||
-    bojId.trim().length > 0;
-  const isFileUploadDisabled = hasTextInput || isSubmitting;
+    !selectedFile &&
+    (studentNumber.trim().length > 0 ||
+      studentName.trim().length > 0 ||
+      bojId.trim().length > 0);
+  const isFileMode = Boolean(selectedFile);
+  const isManualMode = hasTextInput;
+  const isFileUploadDisabled = isManualMode || isSubmitting;
+  const isManualInputDisabled = isFileMode || isSubmitting;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isFileUploadDisabled) {
@@ -169,7 +177,26 @@ export default function AddStudent() {
     setStatusMessage(null);
 
     try {
-      if (hasTextInput) {
+      if (isFileMode) {
+        const file = selectedFile;
+        if (!file) {
+          setStatusType("error");
+          setStatusMessage("업로드할 파일을 먼저 선택해주세요.");
+          return;
+        }
+
+        const students = await parseStudentFile(file);
+        const result = await bulkCreateStudents({ students }, accessToken);
+
+        setStatusType("success");
+        setStatusMessage(
+          `${result.created.length}명의 학생이 등록되었습니다. (${file.name})`,
+        );
+        setSelectedFile(null);
+        return;
+      }
+
+      if (isManualMode) {
         const trimmedStudentNumber = studentNumber.trim();
         const trimmedName = studentName.trim();
         const trimmedBojId = bojId.trim();
@@ -200,22 +227,9 @@ export default function AddStudent() {
         return;
       }
 
-      if (!selectedFile) {
-        setStatusType("error");
-        setStatusMessage(
-          "입력칸을 채우거나 업로드할 파일을 먼저 선택해주세요.",
-        );
-        return;
-      }
-
-      const students = await parseStudentFile(selectedFile);
-      const result = await bulkCreateStudents({ students }, accessToken);
-
-      setStatusType("success");
-      setStatusMessage(
-        `${result.created.length}명의 학생이 등록되었습니다. (${selectedFile.name})`,
-      );
-      setSelectedFile(null);
+      setStatusType("error");
+      setStatusMessage("입력칸을 채우거나 업로드할 파일을 먼저 선택해주세요.");
+      return;
     } catch (error) {
       const message =
         error instanceof Error
@@ -239,6 +253,7 @@ export default function AddStudent() {
           width="180px"
           height="80px"
           value={studentNumber}
+          disabled={isManualInputDisabled}
           onChange={(e) => {
             setStudentNumber(e.target.value);
             setStatusMessage(null);
@@ -251,6 +266,7 @@ export default function AddStudent() {
           width="180px"
           height="80px"
           value={studentName}
+          disabled={isManualInputDisabled}
           onChange={(e) => {
             setStudentName(e.target.value);
             setStatusMessage(null);
@@ -263,6 +279,7 @@ export default function AddStudent() {
           width="230px"
           height="80px"
           value={bojId}
+          disabled={isManualInputDisabled}
           onChange={(e) => {
             setBojId(e.target.value);
             setStatusMessage(null);

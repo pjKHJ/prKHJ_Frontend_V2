@@ -55,7 +55,7 @@ export default function Login() {
         <InputContainer onSubmit={handleLogin}>
           <Input
             name="이메일"
-            width="400px"
+            width="100%"
             height="87px"
             value={email}
             next="을"
@@ -63,7 +63,7 @@ export default function Login() {
           />
           <Input
             name="비밀번호"
-            width="400px"
+            width="100%"
             height="87px"
             type="password"
             value={password}

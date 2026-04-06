@@ -1,12 +1,14 @@
 import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Logo from "../assets/Logo.svg";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
 
   return (
     <Container>
@@ -31,7 +33,7 @@ export default function Header() {
 
         <HamburgerButton
           type="button"
-          aria-label="메뉴 열기"
+          aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
           aria-expanded={isMobileMenuOpen}
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
         >

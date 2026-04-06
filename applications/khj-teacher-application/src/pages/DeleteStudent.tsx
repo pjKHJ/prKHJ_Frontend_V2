@@ -77,7 +77,7 @@ export default function DeleteStudent() {
   const searchType = detectSearchType(searchValue);
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ["managementStudents"],
+    queryKey: ["managementStudents", accessToken],
     queryFn: () => getManagementStudents(accessToken),
     enabled: !!accessToken,
   });

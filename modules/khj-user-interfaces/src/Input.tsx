@@ -7,6 +7,7 @@ interface InputProps {
   height?: string;
   type?: string;
   value?: string;
+  disabled?: boolean;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -17,6 +18,7 @@ export default function Input({
   height,
   type,
   value,
+  disabled,
   onChange,
 }: InputProps) {
   return (
@@ -26,6 +28,7 @@ export default function Input({
         type={type || "text"}
         placeholder={`${name}${next} 입력해주세요`}
         value={value}
+        disabled={disabled}
         onChange={onChange}
       />
     </InputSubContainer>

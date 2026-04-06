@@ -68,7 +68,7 @@ function List() {
       student_no: student.studentNumber,
       name: student.name,
       id: student.bojId,
-      tier: String(student.tier),
+      tier: student.tier,
       solved_total: student.totalSolved,
       accuracy_pct: normalizeAccuracy(student.accuracyRate),
       solved_today: student.todaySolved,
@@ -90,6 +90,12 @@ function List() {
     const sorted = [...filtered].sort((a, b) => {
       const aValue = a[sortKey as keyof typeof a];
       const bValue = b[sortKey as keyof typeof b];
+
+      if (sortKey === "tier") {
+        const aTier = Number(a.tier);
+        const bTier = Number(b.tier);
+        return sortOrder === "asc" ? aTier - bTier : bTier - aTier;
+      }
 
       if (typeof aValue === "number" && typeof bValue === "number") {
         return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
@@ -201,9 +207,7 @@ function List() {
           <BoardList
             items={mappedItems.map((item) => ({
               ...item,
-              tierName:
-                tierMap[parseInt(item.tier) as keyof typeof tierMap] ||
-                "Unknown",
+              tierName: tierMap[item.tier as keyof typeof tierMap] || "Unknown",
             }))}
           />
         ) : (

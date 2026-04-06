@@ -44,7 +44,7 @@ export default function SignUp() {
         <InputContainer onSubmit={handleSignUp}>
           <Input
             name="아이디"
-            width="400px"
+            width="100%"
             height="87px"
             value={userId}
             next="를"
@@ -53,14 +53,14 @@ export default function SignUp() {
           <Input
             name="인증코드"
             next="를"
-            width="400px"
+            width="100%"
             height="87px"
             value={signupCode}
             onChange={(e) => setSignupCode(e.target.value)}
           />
           <Input
             name="비밀번호"
-            width="400px"
+            width="100%"
             height="87px"
             type="password"
             value={password}

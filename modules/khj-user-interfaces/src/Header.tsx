@@ -77,7 +77,8 @@ const Container = styled.header`
   padding: 10px 16px;
   gap: 0;
 
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 1000;
   width: 100%;
   min-height: 80px;
@@ -86,7 +87,7 @@ const Container = styled.header`
   background: #ffffff;
   border-bottom: 1px solid #8a949e;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: visible;
 
   @media (max-width: 768px) {
     padding: 8px 12px;
@@ -175,27 +176,35 @@ const MobileMenu = styled.div<{ isOpen: boolean }>`
 
   @media (max-width: 768px) {
     display: flex;
+    position: absolute;
+    top: 100%;
+    left: 12px;
+    right: 12px;
+    z-index: 1200;
     flex-direction: column;
     gap: 10px;
-    width: 100%;
-    max-width: 1200px;
-    margin: ${({ isOpen }) => (isOpen ? "8px auto 0" : "0 auto")};
+    width: auto;
     padding: 10px;
     border: 1px solid #e3e7eb;
     border-radius: 10px;
     background: #ffffff;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
     box-sizing: border-box;
     overflow: hidden;
     max-height: ${({ isOpen }) => (isOpen ? "260px" : "0")};
     opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
-    transform: translateY(${({ isOpen }) => (isOpen ? "0" : "-8px")});
+    transform: translateY(${({ isOpen }) => (isOpen ? "8px" : "0")});
     transform-origin: top;
     pointer-events: ${({ isOpen }) => (isOpen ? "auto" : "none")};
     transition:
       max-height 0.28s ease,
       opacity 0.22s ease,
-      transform 0.28s ease,
-      margin 0.28s ease;
+      transform 0.28s ease;
+  }
+
+  @media (max-width: 480px) {
+    left: 10px;
+    right: 10px;
   }
 `;
 

@@ -1,9 +1,13 @@
-import styled from "@emotion/styled";
+﻿import styled from "@emotion/styled";
 import axios from "axios";
-import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { deleteStudents, type ErrorResponse } from "../apis/management";
+import {
+  deleteStudents,
+  getManagementStudents,
+  type ErrorResponse,
+} from "../apis/management";
 import { useAuthStore } from "../store/authStore";
 
 type InfoVariant = "info" | "success" | "error";
@@ -16,10 +20,10 @@ interface InfoState {
 
 const defaultInfo: InfoState = {
   variant: "info",
-  title: "삭제할 학번을 입력하세요",
+  title: "학생을 선택해 삭제할 수 있습니다",
   lines: [
-    "쉼표(,)나 공백으로 여러 학번을 한 번에 보낼 수 있습니다.",
-    "삭제 API는 학번(ID) 배열만 받습니다.",
+    "목록에서 학번 또는 이름으로 검색하세요.",
+    "삭제할 학생을 체크한 뒤 삭제하기를 누르세요.",
   ],
 };
 
@@ -27,7 +31,7 @@ const errorMessages: Record<string, InfoState> = {
   GLB_400: {
     variant: "error",
     title: "잘못된 요청입니다",
-    lines: ["학번 형식을 다시 확인해 주세요."],
+    lines: ["요청 데이터를 다시 확인해 주세요."],
   },
   GLB_500: {
     variant: "error",
@@ -42,42 +46,76 @@ const errorMessages: Record<string, InfoState> = {
   STD_400_03: {
     variant: "error",
     title: "잘못된 학생 삭제 요청입니다",
-    lines: ["이미 삭제된 학번이 포함됐는지 확인해 주세요."],
+    lines: ["이미 삭제된 학생이 포함됐는지 확인해 주세요."],
   },
 };
 
-const parseIds = (raw: string): number[] => {
-  const parts = raw
-    .split(/[\s,]+/)
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .map((value) => Number(value))
-    .filter((value) => Number.isInteger(value) && value > 0);
+const toErrorInfo = (fallbackTitle: string): InfoState => ({
+  variant: "error",
+  title: fallbackTitle,
+  lines: ["잠시 후 다시 시도해 주세요."],
+});
 
-  return Array.from(new Set(parts));
+const detectSearchType = (input: string): "학번" | "이름" => {
+  const trimmed = input.trim();
+  if (!trimmed) return "학번";
+  if (/^[\d\s,]*$/.test(trimmed)) {
+    return "학번";
+  }
+  return "이름";
 };
 
 export default function DeleteStudent() {
   const navigate = useNavigate();
-  const [searchType, setSearchType] = useState<"학번" | "이름">("학번");
+  const queryClient = useQueryClient();
   const [searchValue, setSearchValue] = useState("");
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [info, setInfo] = useState<InfoState>(defaultInfo);
   const accessToken = useAuthStore((state) => state.accessToken);
   const logout = useAuthStore((state) => state.logout);
 
+  const searchType = detectSearchType(searchValue);
+
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: ["managementStudents"],
+    queryFn: () => getManagementStudents(accessToken),
+    enabled: !!accessToken,
+  });
+
+  const students = data?.students ?? [];
+
+  const filteredStudents = useMemo(() => {
+    const keyword = searchValue.trim().toLowerCase();
+    if (!keyword) {
+      return students;
+    }
+
+    if (searchType === "학번") {
+      return students.filter((student) =>
+        student.studentNumber.toLowerCase().includes(keyword),
+      );
+    }
+
+    return students.filter((student) =>
+      student.name.toLowerCase().includes(keyword),
+    );
+  }, [searchType, searchValue, students]);
+
   const { mutate: deleteMutate, isPending } = useMutation({
     mutationFn: (ids: number[]) => deleteStudents(ids, accessToken),
-    onSuccess: (data) => {
+    onSuccess: (response) => {
+      const deletedCount = response.deletedIds.length;
       setInfo({
         variant: "success",
         title: "삭제를 완료했습니다",
         lines: [
-          data.deletedIds.length
-            ? `삭제된 학생 ID: ${data.deletedIds.join(", ")}`
+          deletedCount > 0
+            ? `${deletedCount}명의 학생을 삭제했습니다.`
             : "삭제된 학생이 없습니다.",
         ],
       });
-      setSearchValue("");
+      setSelectedIds([]);
+      void queryClient.invalidateQueries({ queryKey: ["managementStudents"] });
     },
     onError: (error) => {
       if (axios.isAxiosError(error)) {
@@ -89,13 +127,7 @@ export default function DeleteStudent() {
           navigate("/login");
         }
 
-        setInfo(
-          mapped ?? {
-            variant: "error",
-            title: "삭제에 실패했습니다",
-            lines: ["잠시 후 다시 시도해 주세요."],
-          },
-        );
+        setInfo(mapped ?? toErrorInfo("삭제에 실패했습니다"));
         return;
       }
 
@@ -113,92 +145,116 @@ export default function DeleteStudent() {
         return;
       }
 
-      setInfo({
-        variant: "error",
-        title: "알 수 없는 오류가 발생했습니다",
-        lines: ["잠시 후 다시 시도해 주세요."],
-      });
+      setInfo(toErrorInfo("알 수 없는 오류가 발생했습니다"));
     },
   });
 
+  const toggleStudent = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((target) => target !== id)
+        : [...prev, id],
+    );
+  };
+
+  const toggleAllFiltered = (checked: boolean) => {
+    if (!checked) {
+      setSelectedIds([]);
+      return;
+    }
+
+    setSelectedIds(filteredStudents.map((student) => student.id));
+  };
+
   const handleDelete = () => {
-    if (searchType === "이름") {
+    if (selectedIds.length === 0) {
       setInfo({
         variant: "error",
-        title: "삭제는 학번(ID)으로만 요청할 수 있습니다",
-        lines: ["학번을 선택한 뒤 숫자만 입력해 주세요."],
+        title: "삭제할 학생을 선택해 주세요",
+        lines: ["목록 왼쪽 체크박스를 클릭해 학생을 선택하세요."],
       });
       return;
     }
 
-    const ids = parseIds(searchValue);
-
-    if (ids.length === 0) {
-      setInfo({
-        variant: "error",
-        title: "삭제할 학번을 입력해 주세요",
-        lines: ["쉼표나 공백으로 여러 건을 구분할 수 있습니다."],
-      });
-      return;
-    }
-
-    deleteMutate(ids);
+    deleteMutate(selectedIds);
   };
 
   const handleReset = () => {
     setSearchValue("");
-    setSearchType("학번");
+    setSelectedIds([]);
     setInfo(defaultInfo);
   };
+
+  const allChecked =
+    filteredStudents.length > 0 &&
+    filteredStudents.every((student) => selectedIds.includes(student.id));
 
   return (
     <PageWrapper>
       <Container>
         <Title>학생삭제</Title>
 
-        {/* 라디오 버튼 영역 */}
-        <SearchType>
-          <RadioLabel>
-            <RadioInput
-              type="radio"
-              name="searchType"
-              checked={searchType === "학번"}
-              onChange={() => setSearchType("학번")}
-            />
-            학번
-          </RadioLabel>
-          <RadioLabel>
-            <RadioInput
-              type="radio"
-              name="searchType"
-              checked={searchType === "이름"}
-              onChange={() => setSearchType("이름")}
-            />
-            이름
-          </RadioLabel>
-        </SearchType>
-
-        {/* 검색 입력 영역 */}
         <InputWrapper>
           <SearchInput
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            placeholder={
-              searchType === "학번"
-                ? "삭제할 학번을 쉼표/공백으로 구분해 입력하세요"
-                : "이름 검색은 지원하지 않습니다"
-            }
+            placeholder="학번 또는 이름으로 검색하세요"
           />
-          <SearchButton
-            type="button"
-            aria-label="검색"
-            onClick={handleDelete}
-            disabled={isPending}
-          ></SearchButton>
         </InputWrapper>
 
-        {/* 상태 안내 */}
+        <ListHeader>
+          <CountText>총 {filteredStudents.length}명</CountText>
+          <SelectAllLabel>
+            <input
+              type="checkbox"
+              checked={allChecked}
+              onChange={(e) => toggleAllFiltered(e.target.checked)}
+              disabled={filteredStudents.length === 0 || isPending}
+            />
+            전체선택
+          </SelectAllLabel>
+        </ListHeader>
+
+        <ListBox>
+          {isLoading || isFetching ? (
+            <ListMessage>학생 목록을 불러오는 중입니다...</ListMessage>
+          ) : null}
+
+          {!isLoading && !isFetching && isError ? (
+            <ListMessage>
+              학생 목록을 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.
+            </ListMessage>
+          ) : null}
+
+          {!isLoading &&
+          !isFetching &&
+          !isError &&
+          filteredStudents.length === 0 ? (
+            <ListMessage>검색 결과가 없습니다.</ListMessage>
+          ) : null}
+
+          {!isLoading &&
+            !isFetching &&
+            !isError &&
+            filteredStudents.map((student) => (
+              <StudentRow key={student.id}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(student.id)}
+                  onChange={() => toggleStudent(student.id)}
+                  disabled={isPending}
+                />
+                <StudentMeta>
+                  <StudentLine>
+                    {student.studentNumber} | {student.name}
+                  </StudentLine>
+                  <BojId>@{student.bojId}</BojId>
+                </StudentMeta>
+              </StudentRow>
+            ))}
+        </ListBox>
+
         <InfoBox variant={info.variant}>
           <InfoHeader>
             <InfoTitle>{info.title}</InfoTitle>
@@ -215,7 +271,6 @@ export default function DeleteStudent() {
           </InfoDescription>
         </InfoBox>
 
-        {/* 버튼 영역 */}
         <ButtonArea>
           <CancelButton
             type="button"
@@ -224,6 +279,13 @@ export default function DeleteStudent() {
           >
             취소하기
           </CancelButton>
+          <ReloadButton
+            type="button"
+            onClick={() => void refetch()}
+            disabled={isPending}
+          >
+            새로고침
+          </ReloadButton>
           <SubmitButton
             type="button"
             onClick={handleDelete}
@@ -236,8 +298,6 @@ export default function DeleteStudent() {
     </PageWrapper>
   );
 }
-
-// ── 스타일링 ──
 
 const PageWrapper = styled.div`
   display: flex;
@@ -252,59 +312,57 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 520px;
-  padding: 48px;
+  max-width: 680px;
+  padding: 48px 20px;
   background: #ffffff;
   border: 1px solid #b1b8be;
   border-radius: 12px;
   box-shadow:
     0 0 2px rgba(0, 0, 0, 0.08),
     0 8px 16px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    padding: 32px 16px;
+    margin: 20px;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 100%;
+    padding: 20px 12px;
+    margin: 10px;
+  }
 `;
 
 const Title = styled.h1`
   font-size: 32px;
   font-weight: 700;
   color: #1a1a1a;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   text-align: center;
-`;
 
-const SearchType = styled.div`
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-`;
+  @media (max-width: 768px) {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
 
-const RadioLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #5f6b76;
-  cursor: pointer;
-`;
-
-const RadioInput = styled.input`
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: #3b5bdb;
+  @media (max-width: 480px) {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
 `;
 
 const InputWrapper = styled.div`
   position: relative;
   width: 100%;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 `;
 
 const SearchInput = styled.input`
   width: 100%;
   height: 48px;
-  padding: 0 48px 0 16px;
+  padding: 0 16px;
   border: 1px solid #d0d5da;
   border-radius: 8px;
   background: #ffffff;
@@ -321,25 +379,98 @@ const SearchInput = styled.input`
   &:focus {
     border-color: #3b5bdb;
   }
+
+  @media (max-width: 768px) {
+    height: 44px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 480px) {
+    height: 40px;
+    font-size: 13px;
+  }
 `;
 
-const SearchButton = styled.button`
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+const ListHeader = styled.div`
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #a0a8b0;
-  cursor: pointer;
-  padding: 0;
+  justify-content: space-between;
+  margin-bottom: 10px;
+`;
+
+const CountText = styled.span`
+  color: #5f6b76;
+  font-size: 14px;
+  font-weight: 600;
+`;
+
+const SelectAllLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #5f6b76;
+`;
+
+const ListBox = styled.div`
+  width: 100%;
+  min-height: 220px;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid #d0d5da;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  padding: 8px;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    max-height: 300px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 480px) {
+    min-height: 180px;
+    max-height: 250px;
+    margin-bottom: 12px;
+    padding: 6px;
+  }
+`;
+
+const StudentRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-radius: 8px;
 
   &:hover {
-    color: #5f6b76;
+    background: #f8fafc;
   }
+`;
+
+const StudentMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const StudentLine = styled.span`
+  font-size: 14px;
+  color: #344054;
+  font-weight: 600;
+`;
+
+const BojId = styled.span`
+  font-size: 13px;
+  color: #667085;
+`;
+
+const ListMessage = styled.p`
+  font-size: 14px;
+  color: #667085;
+  text-align: center;
+  margin: 12px 0;
 `;
 
 const InfoBox = styled.div<{ variant: InfoVariant }>`
@@ -359,8 +490,18 @@ const InfoBox = styled.div<{ variant: InfoVariant }>`
           ? "#f5c2c7"
           : "#d0dff8"};
   border-radius: 8px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
 `;
 
 const InfoHeader = styled.div`
@@ -403,34 +544,55 @@ const InfoListItem = styled.li`
 
 const ButtonArea = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 12px;
   justify-content: center;
   align-items: center;
+
+  @media (max-width: 768px) {
+    gap: 10px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
 `;
 
-const CancelButton = styled.button<{ disabled?: boolean }>`
-  width: 110px;
+const BaseButton = styled.button<{ disabled?: boolean }>`
   height: 44px;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 18px;
+  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
+  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
+
+  @media (max-width: 768px) {
+    height: 40px;
+    font-size: 13px;
+    padding: 0 14px;
+  }
+
+  @media (max-width: 480px) {
+    height: 36px;
+    font-size: 12px;
+    padding: 0 12px;
+    flex: 1;
+  }
+`;
+
+const CancelButton = styled(BaseButton)`
   background: #8a949e;
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 14px;
-  cursor: pointer;
-  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
-  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
 `;
 
-const SubmitButton = styled.button<{ disabled?: boolean }>`
-  width: 110px;
-  height: 44px;
+const ReloadButton = styled(BaseButton)`
+  background: #4b5563;
+`;
+
+const SubmitButton = styled(BaseButton)`
   background: #256ef4;
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
-  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
+  font-weight: 600;
 `;

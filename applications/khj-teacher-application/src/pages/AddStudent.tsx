@@ -1,33 +1,230 @@
 import styled from "@emotion/styled";
 import { Input } from "@khj/user-interfaces";
 import { useState } from "react";
+import * as XLSX from "xlsx";
+import {
+  bulkCreateStudents,
+  createStudent,
+  type BulkStudentItem,
+} from "../apis/management";
+import { useAuthStore } from "../store/authStore";
+
+const ACCEPTED_EXTENSIONS = ["xlsx", "xls"];
+
+const normalizeHeader = (value: string) =>
+  value.toLowerCase().replace(/\s|_|-|\(|\)|\./g, "");
+
+const findHeaderIndex = (headers: string[], candidates: string[]) => {
+  const normalizedCandidates = candidates.map((candidate) =>
+    normalizeHeader(candidate),
+  );
+
+  return headers.findIndex((header) =>
+    normalizedCandidates.includes(normalizeHeader(header)),
+  );
+};
+
+const parseStudentFile = async (file: File): Promise<BulkStudentItem[]> => {
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!ACCEPTED_EXTENSIONS.includes(extension)) {
+    throw new Error("엑셀(.xlsx, .xls) 파일만 업로드할 수 있습니다.");
+  }
+
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: "array" });
+  const firstSheetName = workbook.SheetNames[0];
+  if (!firstSheetName) {
+    throw new Error("시트가 비어있습니다. 양식 파일을 확인해주세요.");
+  }
+
+  const worksheet = workbook.Sheets[firstSheetName];
+  const rows = XLSX.utils.sheet_to_json<(string | number | null)[]>(worksheet, {
+    header: 1,
+    raw: false,
+    defval: "",
+  });
+
+  if (rows.length < 2) {
+    throw new Error("등록할 학생 데이터가 없습니다.");
+  }
+
+  const headerRow = rows[0].map((cell) => String(cell).trim());
+
+  const studentNumberIndex = findHeaderIndex(headerRow, [
+    "studentNumber",
+    "student_no",
+    "학번",
+  ]);
+  const nameIndex = findHeaderIndex(headerRow, ["name", "이름"]);
+  const bojIdIndex = findHeaderIndex(headerRow, ["bojId", "boj", "아이디"]);
+
+  const hasAllHeaders =
+    studentNumberIndex >= 0 && nameIndex >= 0 && bojIdIndex >= 0;
+
+  const parsed = rows
+    .slice(1)
+    .map((row) => {
+      const studentNumber = String(
+        hasAllHeaders ? row[studentNumberIndex] : row[0],
+      ).trim();
+      const name = String(hasAllHeaders ? row[nameIndex] : row[1]).trim();
+      const bojId = String(hasAllHeaders ? row[bojIdIndex] : row[2]).trim();
+
+      return {
+        studentNumber,
+        name,
+        bojId,
+      };
+    })
+    .filter(
+      ({ studentNumber, name, bojId }) =>
+        studentNumber.length > 0 || name.length > 0 || bojId.length > 0,
+    );
+
+  if (parsed.length === 0) {
+    throw new Error("유효한 학생 데이터가 없습니다.");
+  }
+
+  const hasIncompleteRow = parsed.some(
+    ({ studentNumber, name, bojId }) => !studentNumber || !name || !bojId,
+  );
+
+  if (hasIncompleteRow) {
+    throw new Error(
+      "학번, 이름, 아이디 값이 모두 채워진 행만 등록할 수 있습니다.",
+    );
+  }
+
+  return parsed;
+};
 
 export default function AddStudent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [studentNumber, setStudentNumber] = useState("");
+  const [studentName, setStudentName] = useState("");
+  const [bojId, setBojId] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusType, setStatusType] = useState<"success" | "error">("success");
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  const hasTextInput =
+    studentNumber.trim().length > 0 ||
+    studentName.trim().length > 0 ||
+    bojId.trim().length > 0;
+  const isFileUploadDisabled = hasTextInput || isSubmitting;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isFileUploadDisabled) {
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      setStatusMessage(null);
+      setStatusType("success");
     }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragging(true); // 드래그 중 상태로 설정
+
+    if (isFileUploadDisabled) {
+      return;
+    }
+
+    setIsDragging(true);
   };
 
   const handleDragLeave = () => {
-    setIsDragging(false); // 드래그 종료 시 상태를 초기화
+    setIsDragging(false);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragging(false); // 드래그 종료 시 상태를 초기화
+    setIsDragging(false);
+
+    if (isFileUploadDisabled) {
+      return;
+    }
+
     const file = e.dataTransfer.files[0];
     if (file) {
-      setSelectedFile(file); // 드래그 앤 드롭한 파일을 상태에 저장
+      setSelectedFile(file);
+      setStatusMessage(null);
+      setStatusType("success");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!accessToken) {
+      setStatusType("error");
+      setStatusMessage("로그인 정보가 없습니다. 다시 로그인 후 시도해주세요.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatusMessage(null);
+
+    try {
+      if (hasTextInput) {
+        const trimmedStudentNumber = studentNumber.trim();
+        const trimmedName = studentName.trim();
+        const trimmedBojId = bojId.trim();
+
+        if (!trimmedStudentNumber || !trimmedName || !trimmedBojId) {
+          setStatusType("error");
+          setStatusMessage("학번, 이름, 아이디를 모두 입력해주세요.");
+          return;
+        }
+
+        const created = await createStudent(
+          {
+            studentNumber: trimmedStudentNumber,
+            name: trimmedName,
+            bojId: trimmedBojId,
+          },
+          accessToken,
+        );
+
+        setStatusType("success");
+        setStatusMessage(
+          `${created.name}(${created.studentNumber}) 학생이 등록되었습니다.`,
+        );
+        setStudentNumber("");
+        setStudentName("");
+        setBojId("");
+        setSelectedFile(null);
+        return;
+      }
+
+      if (!selectedFile) {
+        setStatusType("error");
+        setStatusMessage(
+          "입력칸을 채우거나 업로드할 파일을 먼저 선택해주세요.",
+        );
+        return;
+      }
+
+      const students = await parseStudentFile(selectedFile);
+      const result = await bulkCreateStudents({ students }, accessToken);
+
+      setStatusType("success");
+      setStatusMessage(
+        `${result.created.length}명의 학생이 등록되었습니다. (${selectedFile.name})`,
+      );
+      setSelectedFile(null);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "학생 등록 중 오류가 발생했습니다.";
+      setStatusType("error");
+      setStatusMessage(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -36,9 +233,42 @@ export default function AddStudent() {
       <Title>학생등록</Title>
 
       <TextRecordArea>
-        <Input name="학번" next="을" width="210px" height="80px" />
-        <Input name="이름" next="을" width="210px" height="80px" />
-        <Input name="아이디" next="를" width="280px" height="80px" />
+        <Input
+          name="학번"
+          next="을"
+          width="210px"
+          height="80px"
+          value={studentNumber}
+          onChange={(e) => {
+            setStudentNumber(e.target.value);
+            setStatusMessage(null);
+            setStatusType("success");
+          }}
+        />
+        <Input
+          name="이름"
+          next="을"
+          width="210px"
+          height="80px"
+          value={studentName}
+          onChange={(e) => {
+            setStudentName(e.target.value);
+            setStatusMessage(null);
+            setStatusType("success");
+          }}
+        />
+        <Input
+          name="아이디"
+          next="를"
+          width="280px"
+          height="80px"
+          value={bojId}
+          onChange={(e) => {
+            setBojId(e.target.value);
+            setStatusMessage(null);
+            setStatusType("success");
+          }}
+        />
       </TextRecordArea>
 
       <Divider>
@@ -66,23 +296,41 @@ export default function AddStudent() {
             <FileInput
               type="file"
               id="file-upload"
+              accept=".xlsx,.xls"
+              disabled={isFileUploadDisabled}
               onChange={handleFileChange}
             />
-            <FileButton htmlFor="file-upload">파일선택</FileButton>
+            <FileButton disabled={isFileUploadDisabled} htmlFor="file-upload">
+              파일선택
+            </FileButton>
           </UploadArea>
         ) : (
           <FileDetails>
             <span>{`${selectedFile.name} [${(selectedFile.size / 1024).toFixed(2)}KB]`}</span>
-            <DeleteButton onClick={() => setSelectedFile(null)}>
+            <DeleteButton
+              onClick={() => {
+                setSelectedFile(null);
+                setStatusMessage(null);
+                setStatusType("success");
+              }}
+            >
               삭제
             </DeleteButton>
           </FileDetails>
         )}
       </UploadBox>
 
+      {statusMessage && (
+        <StatusMessage isError={statusType === "error"}>
+          {statusMessage}
+        </StatusMessage>
+      )}
+
       <ButtonArea>
         <CancelButton>취소하기</CancelButton>
-        <SubmitButton>등록하기</SubmitButton>
+        <SubmitButton onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? "등록중..." : "등록하기"}
+        </SubmitButton>
       </ButtonArea>
     </Container>
   );
@@ -94,10 +342,12 @@ const Container = styled.div`
   align-items: center;
 
   margin: 70px auto;
-  padding: 50px 0;
+  padding: 50px 20px;
 
-  width: 900px;
-  height: 700px;
+  width: 100%;
+  max-width: 900px;
+  min-height: 700px;
+  height: auto;
 
   background: #ffffff;
   border: 1px solid #b1b8be;
@@ -105,17 +355,43 @@ const Container = styled.div`
     0px 0px 2px rgba(0, 0, 0, 0.08),
     0px 8px 16px rgba(0, 0, 0, 0.12);
   border-radius: 12px;
+
+  @media (max-width: 768px) {
+    margin: 40px auto;
+    padding: 30px 16px;
+  }
+
+  @media (max-width: 480px) {
+    margin: 20px auto;
+    padding: 20px 12px;
+  }
 `;
 
 const Title = styled.h1`
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 50px;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+    margin-bottom: 30px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
 `;
 
 const TextRecordArea = styled.div`
   display: flex;
   gap: 30px;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 20px;
+  }
 `;
 
 const Divider = styled.div`
@@ -128,6 +404,7 @@ const Divider = styled.div`
   margin: 50px 0;
   padding: 0 45px;
   color: #8a949e;
+  box-sizing: border-box;
 
   span {
     padding: 0 16px;
@@ -144,10 +421,29 @@ const Divider = styled.div`
     height: 2px;
     background: #c9ced3;
   }
+
+  @media (max-width: 768px) {
+    padding: 0 20px;
+    margin: 30px 0;
+
+    span {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0 16px;
+    margin: 20px 0;
+
+    span {
+      font-size: 14px;
+    }
+  }
 `;
 
 const UploadBox = styled.div<{ isSelected: boolean; isDragging: boolean }>`
-  width: 700px;
+  width: 100%;
+  max-width: 700px;
   height: 160px;
   background: ${({ isSelected, isDragging }) =>
     isDragging ? "#e5e8e9" : isSelected ? "#ffffff" : "#f2f4f6"};
@@ -160,15 +456,40 @@ const UploadBox = styled.div<{ isSelected: boolean; isDragging: boolean }>`
   transition:
     background-color 0.3s ease,
     border 0.3s ease;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    min-height: 140px;
+    padding: 15px;
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px;
+    min-height: 120px;
+  }
 `;
 
 const UploadText = styled.p`
   font-size: 16px;
   color: #5f6b76;
   margin-right: 20px;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    margin-right: 0;
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
 `;
 
-const FileButton = styled.label`
+const FileButton = styled.label<{ disabled?: boolean }>`
   width: 100px;
   height: 40px;
   display: flex;
@@ -176,15 +497,17 @@ const FileButton = styled.label`
   justify-content: center;
   border: none;
   border-radius: 8px;
-  background: #256ef4;
+  background: ${({ disabled }) => (disabled ? "#8fb3f8" : "#256ef4")};
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
 `;
 
 const UploadArea = styled.div`
-  width: 700px;
+  width: 100%;
+  max-width: 700px;
   height: 150px;
 
   background: #f2f4f6;
@@ -195,6 +518,20 @@ const UploadArea = styled.div`
   justify-content: center;
   align-items: center;
   gap: 24px;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 120px;
+    padding: 15px;
+    gap: 16px;
+  }
+
+  @media (max-width: 480px) {
+    min-height: 100px;
+    padding: 12px;
+    gap: 12px;
+  }
 `;
 
 const FileDetails = styled.div`
@@ -202,14 +539,28 @@ const FileDetails = styled.div`
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  max-width: 700px;
   font-size: 14px;
   border: 1px solid #b1b8be;
   padding: 14px 22px;
   border-radius: 9px;
   color: #5f6b76;
+  box-sizing: border-box;
 
   span {
     font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    padding: 12px 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 10px 12px;
   }
 `;
 
@@ -228,6 +579,22 @@ const ButtonArea = styled.div`
   margin-top: 80px;
   align-self: flex-end;
   padding-right: 60px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    align-self: center;
+    padding-right: 0;
+    margin-top: 40px;
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 30px;
+    gap: 10px;
+  }
 `;
 
 const FileInput = styled.input`
@@ -243,6 +610,12 @@ const CancelButton = styled.button`
   color: #ffffff;
   font-size: 14px;
   cursor: pointer;
+
+  @media (max-width: 480px) {
+    width: 100%;
+    height: 40px;
+    font-size: 13px;
+  }
 `;
 
 const SubmitButton = styled.button`
@@ -255,6 +628,43 @@ const SubmitButton = styled.button`
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+
+  &:disabled {
+    background: #8fb3f8;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    height: 40px;
+    font-size: 13px;
+  }
+`;
+
+const StatusMessage = styled.p<{ isError: boolean }>`
+  margin-top: 12px;
+  width: 100%;
+  max-width: 700px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 1.5;
+  color: ${({ isError }) => (isError ? "#b42318" : "#475467")};
+  background: ${({ isError }) =>
+    isError ? "rgba(217, 45, 32, 0.12)" : "transparent"};
+  border: ${({ isError }) =>
+    isError ? "1px solid rgba(217, 45, 32, 0.35)" : "none"};
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
 `;
 
 const DownloadLink = styled.a`

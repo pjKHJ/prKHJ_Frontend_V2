@@ -357,7 +357,19 @@ const Content = styled.div`
   align-items: flex-start;
   display: flex;
   gap: 35px;
-  padding: 35px 0px;
+  padding: 35px 20px;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    gap: 24px;
+    padding: 24px 16px;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 12px;
+  }
 `;
 
 const BoardContainer = styled.div`
@@ -368,9 +380,26 @@ const BoardContainer = styled.div`
   display: flex;
   flex-direction: column;
 
-  width: 950px;
+  width: 100%;
+  max-width: 950px;
   min-height: 800px;
   height: auto;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    max-width: 800px;
+    padding: 20px;
+  }
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    min-height: auto;
+    padding: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
 `;
 
 const BoardTitle = styled.h1`
@@ -383,6 +412,18 @@ const BoardTitle = styled.h1`
   font-size: 28px;
   color: #1e2124;
   margin-bottom: 50px;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+    margin-bottom: 30px;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
 `;
 
 const SearchFilterBox = styled.div`
@@ -390,6 +431,22 @@ const SearchFilterBox = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  @media (max-width: 1024px) {
+    width: 220px;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: row;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+  }
 `;
 
 const SectionContainer = styled.div`
@@ -399,6 +456,17 @@ const SectionContainer = styled.div`
   padding: 20px;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    flex: 1;
+    min-width: 150px;
+    padding: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -408,6 +476,16 @@ const SectionTitle = styled.h2`
 
   color: #1e2124;
   margin-bottom: 16px;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
 `;
 
 const RadioGroup = styled.div`
@@ -416,6 +494,16 @@ const RadioGroup = styled.div`
   justify-content: flex-end;
   gap: 16px;
   margin-bottom: 16px;
+
+  @media (max-width: 768px) {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 `;
 
 const RadioLabel = styled.label`
@@ -453,6 +541,19 @@ const RadioLabel = styled.label`
       }
     }
   }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+
+    input[type="radio"] {
+      width: 16px;
+      height: 16px;
+    }
+  }
 `;
 
 const SearchInputContainer = styled.div`
@@ -463,10 +564,26 @@ const SearchInputContainer = styled.div`
   padding: 0 12px;
   width: 235px;
   height: 45px;
+  box-sizing: border-box;
 
   &:focus-within {
     border-color: #256ef4;
     box-shadow: 0 0 0 2px rgba(37, 110, 244, 0.2);
+  }
+
+  @media (max-width: 1024px) {
+    width: 200px;
+    height: 42px;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 40px;
+  }
+
+  @media (max-width: 480px) {
+    height: 36px;
+    padding: 0 10px;
   }
 `;
 

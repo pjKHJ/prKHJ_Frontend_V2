@@ -341,13 +341,13 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
 
-  margin: 70px auto;
-  padding: 50px 20px;
-
   width: 100%;
   max-width: 900px;
   min-height: 700px;
   height: auto;
+  margin: 70px auto;
+  padding: 50px 20px;
+  box-sizing: border-box;
 
   background: #ffffff;
   border: 1px solid #b1b8be;
@@ -359,11 +359,13 @@ const Container = styled.div`
   @media (max-width: 768px) {
     margin: 40px auto;
     padding: 30px 16px;
+    min-height: auto;
   }
 
   @media (max-width: 480px) {
     margin: 20px auto;
     padding: 20px 12px;
+    max-width: calc(100% - 24px);
   }
 `;
 
@@ -387,10 +389,16 @@ const TextRecordArea = styled.div`
   display: flex;
   gap: 30px;
   width: 100%;
+  flex-wrap: wrap;
 
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 20px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 16px;
   }
 `;
 
@@ -575,18 +583,20 @@ const DeleteButton = styled.button`
 
 const ButtonArea = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 12px;
   margin-top: 80px;
-  align-self: flex-end;
-  padding-right: 60px;
+  align-self: stretch;
+  justify-content: flex-end;
+  width: 100%;
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
     width: 100%;
     justify-content: center;
     align-self: center;
-    padding-right: 0;
     margin-top: 40px;
-    gap: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
   @media (max-width: 480px) {
@@ -601,43 +611,44 @@ const FileInput = styled.input`
   display: none;
 `;
 
-const CancelButton = styled.button`
-  width: 110px;
-  height: 44px;
-  background: #8a949e;
+const BaseActionButton = styled.button`
+  min-height: 44px;
   border: none;
   border-radius: 8px;
   color: #ffffff;
   font-size: 14px;
   cursor: pointer;
+  padding: 0 18px;
+  min-width: 110px;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    min-height: 42px;
+    font-size: 13px;
+    padding: 0 16px;
+    flex: 1;
+  }
 
   @media (max-width: 480px) {
     width: 100%;
-    height: 40px;
-    font-size: 13px;
+    min-height: 44px;
+    font-size: 14px;
+    padding: 0 14px;
+    flex: none;
   }
 `;
 
-const SubmitButton = styled.button`
-  width: 110px;
-  height: 44px;
+const CancelButton = styled(BaseActionButton)`
+  background: #8a949e;
+`;
+
+const SubmitButton = styled(BaseActionButton)`
   background: #256ef4;
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
 
   &:disabled {
     background: #8fb3f8;
     cursor: not-allowed;
-  }
-
-  @media (max-width: 480px) {
-    width: 100%;
-    height: 40px;
-    font-size: 13px;
   }
 `;
 

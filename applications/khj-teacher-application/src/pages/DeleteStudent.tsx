@@ -547,40 +547,48 @@ const ButtonArea = styled.div`
   gap: 12px;
   justify-content: center;
   align-items: center;
+  width: 100%;
 
   @media (max-width: 768px) {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: stretch;
     gap: 10px;
   }
 
   @media (max-width: 480px) {
     flex-direction: column;
     width: 100%;
-    gap: 8px;
+    gap: 10px;
   }
 `;
 
 const BaseButton = styled.button<{ disabled?: boolean }>`
-  height: 44px;
+  min-height: 44px;
   border: none;
   border-radius: 8px;
   color: #ffffff;
   font-size: 14px;
   cursor: pointer;
   padding: 0 18px;
+  min-width: 110px;
   opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
   pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
-    height: 40px;
+    min-height: 42px;
     font-size: 13px;
-    padding: 0 14px;
+    padding: 0 16px;
+    flex: 1;
   }
 
   @media (max-width: 480px) {
-    height: 36px;
-    font-size: 12px;
-    padding: 0 12px;
-    flex: 1;
+    width: 100%;
+    min-height: 44px;
+    font-size: 14px;
+    padding: 0 14px;
+    flex: none;
   }
 `;
 

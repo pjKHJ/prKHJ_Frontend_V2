@@ -304,7 +304,7 @@ const PageWrapper = styled.div`
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 160px);
-  padding: 64px 16px;
+  padding: 36px 16px;
 `;
 
 const Container = styled.div`
@@ -312,8 +312,8 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 680px;
-  padding: 48px 20px;
+  max-width: 560px;
+  padding: 34px 18px;
   background: #ffffff;
   border: 1px solid #b1b8be;
   border-radius: 12px;
@@ -321,6 +321,10 @@ const Container = styled.div`
     0 0 2px rgba(0, 0, 0, 0.08),
     0 8px 16px rgba(0, 0, 0, 0.12);
   box-sizing: border-box;
+
+  @media (max-width: 1200px) {
+    max-width: 520px;
+  }
 
   @media (max-width: 768px) {
     max-width: 100%;
@@ -336,10 +340,10 @@ const Container = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #1a1a1a;
-  margin-bottom: 32px;
+  margin-bottom: 26px;
   text-align: center;
 
   @media (max-width: 768px) {

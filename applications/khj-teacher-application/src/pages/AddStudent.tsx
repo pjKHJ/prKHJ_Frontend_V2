@@ -236,7 +236,7 @@ export default function AddStudent() {
         <Input
           name="학번"
           next="을"
-          width="210px"
+          width="180px"
           height="80px"
           value={studentNumber}
           onChange={(e) => {
@@ -248,7 +248,7 @@ export default function AddStudent() {
         <Input
           name="이름"
           next="을"
-          width="210px"
+          width="180px"
           height="80px"
           value={studentName}
           onChange={(e) => {
@@ -260,7 +260,7 @@ export default function AddStudent() {
         <Input
           name="아이디"
           next="를"
-          width="280px"
+          width="230px"
           height="80px"
           value={bojId}
           onChange={(e) => {
@@ -342,11 +342,11 @@ const Container = styled.div`
   align-items: center;
 
   width: 100%;
-  max-width: 900px;
-  min-height: 700px;
+  max-width: 760px;
+  min-height: 560px;
   height: auto;
-  margin: 70px auto;
-  padding: 50px 20px;
+  margin: 44px auto;
+  padding: 36px 18px;
   box-sizing: border-box;
 
   background: #ffffff;
@@ -355,6 +355,10 @@ const Container = styled.div`
     0px 0px 2px rgba(0, 0, 0, 0.08),
     0px 8px 16px rgba(0, 0, 0, 0.12);
   border-radius: 12px;
+
+  @media (max-width: 1200px) {
+    max-width: 700px;
+  }
 
   @media (max-width: 768px) {
     margin: 40px auto;
@@ -370,9 +374,9 @@ const Container = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
-  margin-bottom: 50px;
+  margin-bottom: 36px;
 
   @media (max-width: 768px) {
     font-size: 24px;
@@ -390,15 +394,19 @@ const TextRecordArea = styled.div`
   gap: 30px;
   width: 100%;
   flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
 
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 20px;
+    align-items: center;
   }
 
   @media (max-width: 480px) {
     flex-direction: column;
     gap: 16px;
+    align-items: center;
   }
 `;
 
@@ -409,7 +417,7 @@ const Divider = styled.div`
   justify-content: center;
 
   width: 100%;
-  margin: 50px 0;
+  margin: 36px 0;
   padding: 0 45px;
   color: #8a949e;
   box-sizing: border-box;
@@ -451,8 +459,8 @@ const Divider = styled.div`
 
 const UploadBox = styled.div<{ isSelected: boolean; isDragging: boolean }>`
   width: 100%;
-  max-width: 700px;
-  height: 160px;
+  max-width: 620px;
+  height: 148px;
   background: ${({ isSelected, isDragging }) =>
     isDragging ? "#e5e8e9" : isSelected ? "#ffffff" : "#f2f4f6"};
   border-radius: 12px;
@@ -515,8 +523,8 @@ const FileButton = styled.label<{ disabled?: boolean }>`
 
 const UploadArea = styled.div`
   width: 100%;
-  max-width: 700px;
-  height: 150px;
+  max-width: 620px;
+  height: 140px;
 
   background: #f2f4f6;
   border-radius: 12px;
@@ -547,7 +555,7 @@ const FileDetails = styled.div`
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 700px;
+  max-width: 620px;
   font-size: 14px;
   border: 1px solid #b1b8be;
   padding: 14px 22px;
@@ -584,7 +592,7 @@ const DeleteButton = styled.button`
 const ButtonArea = styled.div`
   display: flex;
   gap: 12px;
-  margin-top: 80px;
+  margin-top: 44px;
   align-self: stretch;
   justify-content: flex-end;
   width: 100%;

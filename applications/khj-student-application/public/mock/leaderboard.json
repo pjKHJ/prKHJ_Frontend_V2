@@ -1,0 +1,138 @@
+{
+  "class": [
+    {
+      "class": 1,
+      "tier": 15,
+      "totalSolved": 542,
+      "accuracyRate": 88.4,
+      "todaySolved": 24,
+      "streak": 18,
+      "maxStreak": 39
+    },
+    {
+      "class": 2,
+      "tier": 13,
+      "totalSolved": 501,
+      "accuracyRate": 84.7,
+      "todaySolved": 19,
+      "streak": 12,
+      "maxStreak": 31
+    },
+    {
+      "class": 3,
+      "tier": 14,
+      "totalSolved": 487,
+      "accuracyRate": 86.9,
+      "todaySolved": 21,
+      "streak": 15,
+      "maxStreak": 28
+    },
+    {
+      "class": 4,
+      "tier": 12,
+      "totalSolved": 460,
+      "accuracyRate": 82.1,
+      "todaySolved": 17,
+      "streak": 9,
+      "maxStreak": 26
+    }
+  ],
+  "students": [
+    {
+      "id": 1,
+      "studentNumber": "1301",
+      "name": "홍길동",
+      "bojId": "gildong",
+      "tier": 16,
+      "totalSolved": 322,
+      "accuracyRate": 91.2,
+      "todaySolved": 8,
+      "streak": 27,
+      "maxStreak": 46
+    },
+    {
+      "id": 2,
+      "studentNumber": "1302",
+      "name": "김민수",
+      "bojId": "mskim",
+      "tier": 15,
+      "totalSolved": 298,
+      "accuracyRate": 89.3,
+      "todaySolved": 7,
+      "streak": 21,
+      "maxStreak": 37
+    },
+    {
+      "id": 3,
+      "studentNumber": "1303",
+      "name": "이서연",
+      "bojId": "seoyeon",
+      "tier": 14,
+      "totalSolved": 276,
+      "accuracyRate": 87.8,
+      "todaySolved": 6,
+      "streak": 19,
+      "maxStreak": 33
+    },
+    {
+      "id": 4,
+      "studentNumber": "1304",
+      "name": "박지후",
+      "bojId": "jihuu",
+      "tier": 13,
+      "totalSolved": 254,
+      "accuracyRate": 85.1,
+      "todaySolved": 5,
+      "streak": 14,
+      "maxStreak": 30
+    },
+    {
+      "id": 5,
+      "studentNumber": "1305",
+      "name": "정하윤",
+      "bojId": "hayoon",
+      "tier": 12,
+      "totalSolved": 241,
+      "accuracyRate": 84.2,
+      "todaySolved": 4,
+      "streak": 11,
+      "maxStreak": 25
+    },
+    {
+      "id": 6,
+      "studentNumber": "1306",
+      "name": "최도윤",
+      "bojId": "doyuni",
+      "tier": 11,
+      "totalSolved": 226,
+      "accuracyRate": 82.6,
+      "todaySolved": 4,
+      "streak": 10,
+      "maxStreak": 24
+    },
+    {
+      "id": 7,
+      "studentNumber": "1307",
+      "name": "윤가은",
+      "bojId": "gaeun",
+      "tier": 10,
+      "totalSolved": 214,
+      "accuracyRate": 81.4,
+      "todaySolved": 3,
+      "streak": 8,
+      "maxStreak": 21
+    },
+    {
+      "id": 8,
+      "studentNumber": "1308",
+      "name": "오준서",
+      "bojId": "junseo",
+      "tier": 9,
+      "totalSolved": 198,
+      "accuracyRate": 79.7,
+      "todaySolved": 3,
+      "streak": 7,
+      "maxStreak": 20
+    }
+  ]
+}

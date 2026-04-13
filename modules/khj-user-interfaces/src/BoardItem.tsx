@@ -65,21 +65,46 @@ function BoardItem({
 const BoardItemContainer = styled.div`
   font-family: "Pretendard GOV", sans-serif;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
 
   display: flex;
-  gap: 36px;
-  height: 40px;
-  width: 900px;
+  gap: 32px;
+  padding: 12px 16px;
+  height: auto;
+  min-height: 36px;
+  min-width: 900px;
 
   border-bottom: 1px solid #8a949e;
   color: #1e2124;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  transition: all 0.2s;
 
   &:hover {
     color: #0b50d0;
     font-weight: 500;
+    background-color: #f5f7fa;
+  }
+
+  @media (max-width: 1024px) {
+    gap: 24px;
+    min-width: 800px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 16px;
+    min-width: 700px;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+    min-width: 600px;
+    font-size: 11px;
+    padding: 8px 10px;
   }
 `;
 

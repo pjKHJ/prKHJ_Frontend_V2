@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { HelmetProvider } from "react-helmet-async";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 
 // console 로그/에러를 프로덕션에서 숨기기
@@ -15,10 +15,11 @@ if (!rootElement) {
   throw new Error("Failed to find the root element");
 }
 const root = createRoot(rootElement);
+const queryClient = new QueryClient();
 root.render(
   <StrictMode>
-    <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
       <App />
-    </HelmetProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );

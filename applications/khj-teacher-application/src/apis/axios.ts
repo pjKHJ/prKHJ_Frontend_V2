@@ -1,6 +1,14 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
+if (!baseURL) {
+  throw new Error(
+    "VITE_API_BASE_URL is not defined. Please set VITE_API_BASE_URL in your environment.",
+  );
+}
+
 export const api = axios.create({
-  baseURL: "http://localhost:8080", // 예시
+  baseURL,
   withCredentials: true,
 });

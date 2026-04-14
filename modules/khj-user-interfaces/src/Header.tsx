@@ -27,8 +27,6 @@ export default function Header() {
           <UpText to="/login">로그인</UpText>
           <Divider>|</Divider>
           <UpText to="/signup">회원가입</UpText>
-          <Divider>|</Divider>
-          <UpText to="/">About</UpText>
         </DesktopAuth>
 
         <HamburgerButton

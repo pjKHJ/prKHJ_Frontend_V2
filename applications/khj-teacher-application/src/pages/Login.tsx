@@ -8,14 +8,10 @@ import { useAuthStore } from "../store/authStore";
 import axios from "axios";
 
 export default function Login() {
-  const [email, setEmail] = useState(
-    () => localStorage.getItem("savedEmail") || "",
-  );
+  const [Id, setId] = useState(() => localStorage.getItem("savedId") || "");
   const [password, setPassword] = useState("");
 
-  const [saveEmail, setSaveEmail] = useState(
-    !!localStorage.getItem("savedEmail"),
-  );
+  const [saveId, setSaveId] = useState(!!localStorage.getItem("savedId"));
 
   const navigate = useNavigate();
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
@@ -24,12 +20,12 @@ export default function Login() {
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (data: LoginResponse) => {
       setAccessToken(data.accessToken);
-      localStorage.setItem("currentUserId", email);
+      localStorage.setItem("currentUserId", Id);
 
-      if (saveEmail) {
-        localStorage.setItem("savedEmail", email);
+      if (saveId) {
+        localStorage.setItem("savedId", Id);
       } else {
-        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedId");
       }
       console.log("로그인 성공:", data);
       navigate("/list");
@@ -61,7 +57,7 @@ export default function Login() {
   const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     loginMutate({
-      userName: email,
+      userName: Id,
       password: password,
     });
   };
@@ -77,9 +73,9 @@ export default function Login() {
           name="아이디"
           width="400px"
           height="87px"
-          value={email}
+          value={Id}
           next="을"
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setId(e.target.value)}
         />
         <Input
           name="비밀번호"
@@ -90,14 +86,14 @@ export default function Login() {
           next="를"
           onChange={(e) => setPassword(e.target.value)}
         />
-        <SaveEmailContainer>
-          <SaveEmailCheckbox
+        <SaveIdContainer>
+          <SaveIdCheckbox
             type="checkbox"
-            checked={saveEmail}
-            onChange={(e) => setSaveEmail(e.target.checked)}
+            checked={saveId}
+            onChange={(e) => setSaveId(e.target.checked)}
           />
           <span>아이디 저장</span>
-        </SaveEmailContainer>
+        </SaveIdContainer>
         <LoginButton type="submit" disabled={isPending}>
           {isPending ? "로그인 중..." : "로그인"}
         </LoginButton>
@@ -174,7 +170,7 @@ const InputContainer = styled.form`
   border-bottom: 1px solid #8a949e;
 `;
 
-const SaveEmailContainer = styled.div`
+const SaveIdContainer = styled.div`
   display: flex;
   justify-content: flex-start;
   flex-direction: row;
@@ -186,7 +182,7 @@ const SaveEmailContainer = styled.div`
   height: 26px;
 `;
 
-const SaveEmailCheckbox = styled.input`
+const SaveIdCheckbox = styled.input`
   display: flex;
   padding: 2px;
 

@@ -1,14 +1,52 @@
 import styled from "@emotion/styled";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../assets/Logo.svg";
 
 export default function Header() {
+  const navigate = useNavigate();
+  const currentUserId = localStorage.getItem("currentUserId");
+  const isLoggedIn = (() => {
+    try {
+      const authStorage = localStorage.getItem("auth-storage");
+      if (!authStorage) {
+        return false;
+      }
+
+      const parsed = JSON.parse(authStorage);
+      return parsed?.state?.isLoggedIn === true;
+    } catch {
+      return false;
+    }
+  })();
+
+  const handleLogout = () => {
+    if (!window.confirm("로그아웃 하시겠습니까?")) {
+      return;
+    }
+
+    localStorage.removeItem("auth-storage");
+    localStorage.removeItem("currentUserId");
+    navigate("/login");
+  };
+
   return (
     <Container>
       <UpContainer>
-        <UpText to="/login">로그인</UpText>
-        <Divider>|</Divider>
-        <UpText to="/signup">회원가입</UpText>
+        {isLoggedIn && currentUserId ? (
+          <>
+            <UpUserText>{currentUserId}</UpUserText>
+            <Divider>|</Divider>
+            <UpActionButton type="button" onClick={handleLogout}>
+              로그아웃
+            </UpActionButton>
+          </>
+        ) : (
+          <>
+            <UpText to="/login">로그인</UpText>
+            <Divider>|</Divider>
+            <UpText to="/signup">회원가입</UpText>
+          </>
+        )}
         <Divider>|</Divider>
         <UpText to="/">About</UpText>
       </UpContainer>
@@ -68,6 +106,46 @@ const UpText = styled(Link)`
   line-height: 150%;
 
   text-decoration: none;
+
+  color: #1e2124;
+`;
+
+const UpActionButton = styled.button`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+
+  width: fit-content;
+  height: 24px;
+
+  border: none;
+  background: transparent;
+
+  font-family: "Pretendard GOV";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 150%;
+
+  color: #1e2124;
+  cursor: pointer;
+`;
+
+const UpUserText = styled.span`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+
+  width: fit-content;
+  height: 24px;
+
+  font-family: "Pretendard GOV";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 150%;
 
   color: #1e2124;
 `;

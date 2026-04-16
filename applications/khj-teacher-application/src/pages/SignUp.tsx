@@ -67,54 +67,78 @@ export default function SignUp() {
   };
 
   return (
-    <Container>
-      <TextContainer>
-        <h1>회원가입</h1>
-      </TextContainer>
-      <InputContainer onSubmit={handleSignUp}>
-        <Input
-          name="아이디"
-          width="400px"
-          height="87px"
-          value={userId}
-          next="를"
-          onChange={(e) => setUserId(e.target.value)}
-        />
-        <Input
-          name="비밀번호"
-          width="400px"
-          height="87px"
-          type="password"
-          value={password}
-          next="를"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Input
-          name="인증코드"
-          next="를"
-          width="400px"
-          height="87px"
-          value={signupCode}
-          onChange={(e) => setSignupCode(e.target.value)}
-        />
-        <LoginButton type="submit" disabled={isPending}>
-          {isPending ? "회원가입 중..." : "회원가입"}
-        </LoginButton>
-      </InputContainer>
-    </Container>
+    <PageWrapper>
+      <Container>
+        <TextContainer>
+          <h1>회원가입</h1>
+        </TextContainer>
+        <InputContainer onSubmit={handleSignUp}>
+          <Input
+            name="아이디"
+            width="100%"
+            height="87px"
+            value={userId}
+            next="를"
+            onChange={(e) => setUserId(e.target.value)}
+          />
+          <Input
+            name="인증코드"
+            next="를"
+            width="100%"
+            height="87px"
+            value={signupCode}
+            onChange={(e) => setSignupCode(e.target.value)}
+          />
+          <Input
+            name="비밀번호"
+            width="100%"
+            height="87px"
+            type="password"
+            value={password}
+            next="를"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <LoginButton type="submit" disabled={isPending}>
+            {isPending ? "회원가입 중..." : "회원가입"}
+          </LoginButton>
+        </InputContainer>
+      </Container>
+    </PageWrapper>
   );
 }
+
+const PageWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: calc(100vh - 180px);
+  padding: 24px 12px;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    min-height: calc(100vh - 150px);
+    padding: 20px 12px;
+  }
+
+  @media (max-width: 480px) {
+    min-height: calc(100vh - 130px);
+    padding: 16px 12px;
+  }
+`;
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0px;
-  margin: 83px auto;
+  padding: 32px 18px;
+  margin: 0;
 
-  width: 640px;
-  height: 720px;
+  width: min(100%, 560px);
+  min-height: 620px;
+  height: auto;
+  box-sizing: border-box;
 
   background: #ffffff;
   border: 1px solid #b1b8be;
@@ -122,6 +146,16 @@ const Container = styled.div`
     0px 0px 2px rgba(0, 0, 0, 0.08),
     0px 8px 16px rgba(0, 0, 0, 0.12);
   border-radius: 12px;
+
+  @media (max-width: 768px) {
+    padding: 24px 14px;
+    min-height: auto;
+  }
+
+  @media (max-width: 480px) {
+    padding: 18px 12px;
+    max-width: calc(100% - 24px);
+  }
 `;
 
 const TextContainer = styled.div`
@@ -132,11 +166,25 @@ const TextContainer = styled.div`
   padding: 0px;
   gap: 10px;
 
-  width: 650px;
-  height: 60px;
+  width: 100%;
+  height: auto;
+
   h1 {
-    font-size: 40px;
+    margin: 0;
+    font-size: 34px;
     line-height: 150%;
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 28px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 22px;
+    }
   }
 `;
 
@@ -147,10 +195,23 @@ const InputContainer = styled.form`
   gap: 24px;
   margin-top: 30px;
 
-  width: 400px;
-  height: 445px;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
 
   border-bottom: 1px solid #8a949e;
+
+  @media (max-width: 768px) {
+    gap: 18px;
+    margin-top: 24px;
+    padding: 12px 0;
+  }
+
+  @media (max-width: 480px) {
+    gap: 14px;
+    margin-top: 20px;
+    padding: 8px 0;
+  }
 `;
 
 const LoginButton = styled.button`
@@ -163,8 +224,10 @@ const LoginButton = styled.button`
 
   margin-top: 20px;
 
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   min-width: 90px;
+  min-height: 44px;
   height: 56px;
 
   border: none;
@@ -180,4 +243,15 @@ const LoginButton = styled.button`
   color: #ffffff;
 
   cursor: pointer;
+
+  @media (max-width: 768px) {
+    height: 48px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 480px) {
+    margin-top: 12px;
+    height: 44px;
+    font-size: 14px;
+  }
 `;

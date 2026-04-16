@@ -3,28 +3,59 @@ import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
 import { useMutation } from "@tanstack/react-query";
 import { signUp, type SignUpRequest, type SignUpResponse } from "../apis/auth";
+import axios from "axios";
 
 export default function SignUp() {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [signupCode, setSignupCode] = useState("");
 
-  const { mutate: signUpMutate } = useMutation({
+  const { mutate: signUpMutate, isPending } = useMutation({
     mutationFn: (data: SignUpRequest) => signUp(data),
     onSuccess: (data: SignUpResponse) => {
       console.log("회원가입 성공:", data);
+      location.href = "/login";
     },
     onError: (error) => {
+      let errorMessage = "회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
+      if (axios.isAxiosError(error)) {
+        const code = error.response?.data?.code;
+        switch (code) {
+          case "USR_401":
+            errorMessage = "이름 또는 비밀번호가 올바르지 않습니다.";
+            break;
+          case "USR_404":
+            errorMessage = "존재하지 않는 유저입니다.";
+            break;
+          case "USR_409":
+            errorMessage = "이미 가입된 이름입니다.";
+            break;
+          case "USR_400":
+            errorMessage = "인증 코드가 올바르지 않습니다.";
+            break;
+          default:
+            break;
+        }
+      }
+
       console.error("회원가입 실패:", error);
+      alert(errorMessage);
     },
   });
 
   const handleSignUp = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log("회원가입 버튼 눌림");
+
     const normalizedUserId = userId.trim();
     const normalizedSignupCode = signupCode.trim();
+    console.log(
+      `현재 입력값 - ID: ${normalizedUserId}, PW: ${password}, CODE: ${normalizedSignupCode}`,
+    );
 
     if (!normalizedUserId || !password || !normalizedSignupCode) {
+      alert("모든 필드를 입력해주세요.");
       return;
     }
 
@@ -66,7 +97,9 @@ export default function SignUp() {
           value={signupCode}
           onChange={(e) => setSignupCode(e.target.value)}
         />
-        <LoginButton>회원가입</LoginButton>
+        <LoginButton type="submit" disabled={isPending}>
+          {isPending ? "회원가입 중..." : "회원가입"}
+        </LoginButton>
       </InputContainer>
     </Container>
   );

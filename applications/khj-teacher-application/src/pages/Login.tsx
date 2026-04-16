@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { login, type LoginRequest, type LoginResponse } from "../apis/auth";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState(
@@ -19,10 +20,11 @@ export default function Login() {
   const navigate = useNavigate();
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
-  const { mutate: loginMutate } = useMutation({
+  const { mutate: loginMutate, isPending } = useMutation({
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (data: LoginResponse) => {
       setAccessToken(data.accessToken);
+      localStorage.setItem("currentUserId", email);
 
       if (saveEmail) {
         localStorage.setItem("savedEmail", email);
@@ -30,10 +32,29 @@ export default function Login() {
         localStorage.removeItem("savedEmail");
       }
       console.log("로그인 성공:", data);
-      navigate("/");
+      navigate("/list");
     },
     onError: (error) => {
+      let errorMessage = "로그인에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
+      if (axios.isAxiosError(error)) {
+        const code = error.response?.data?.code;
+        switch (code) {
+          case "USR_400":
+            errorMessage = "잘못된 요청입니다. 입력값을 확인해주세요.";
+            break;
+          case "USR_401":
+            errorMessage = "이메일 또는 비밀번호가 올바르지 않습니다.";
+            break;
+          case "USR_404":
+            errorMessage = "존재하지 않는 유저입니다.";
+            break;
+          default:
+            break;
+        }
+      }
       console.error("로그인 실패:", error);
+      alert(errorMessage);
     },
   });
 
@@ -49,11 +70,11 @@ export default function Login() {
     <Container>
       <TextContainer>
         <h1>Daedeok Software Coding Test System 로그인</h1>
-        <p>이메일/비밀번호 로그인</p>
+        <p>아이디/비밀번호 로그인</p>
       </TextContainer>
       <InputContainer onSubmit={handleLogin}>
         <Input
-          name="이메일"
+          name="아이디"
           width="400px"
           height="87px"
           value={email}
@@ -75,9 +96,11 @@ export default function Login() {
             checked={saveEmail}
             onChange={(e) => setSaveEmail(e.target.checked)}
           />
-          <span>이메일 저장</span>
+          <span>아이디 저장</span>
         </SaveEmailContainer>
-        <LoginButton type="submit">로그인</LoginButton>
+        <LoginButton type="submit" disabled={isPending}>
+          {isPending ? "로그인 중..." : "로그인"}
+        </LoginButton>
       </InputContainer>
     </Container>
   );

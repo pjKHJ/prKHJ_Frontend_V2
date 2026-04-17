@@ -3,23 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCallback, useState } from "react";
 import Logo from "../assets/Logo.svg";
 
-export default function Header() {
+interface HeaderProps {
+  isLoggedIn: boolean;
+  currentUserId: string | null;
+  onLogout: () => void;
+}
+
+export default function Header({
+  isLoggedIn,
+  currentUserId,
+  onLogout,
+}: HeaderProps) {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const currentUserId = localStorage.getItem("currentUserId");
-  const isLoggedIn = (() => {
-    try {
-      const authStorage = localStorage.getItem("auth-storage");
-      if (!authStorage) {
-        return false;
-      }
-
-      const parsed = JSON.parse(authStorage);
-      return parsed?.state?.isLoggedIn === true;
-    } catch {
-      return false;
-    }
-  })();
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
@@ -30,8 +26,7 @@ export default function Header() {
       return;
     }
 
-    localStorage.removeItem("auth-storage");
-    localStorage.removeItem("currentUserId");
+    onLogout();
     closeMobileMenu();
     navigate("/login");
   };

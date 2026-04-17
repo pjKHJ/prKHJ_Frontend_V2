@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
 import { useMutation } from "@tanstack/react-query";
-import { signUp, type SignUpRequest, type SignUpResponse } from "../apis/auth";
+import { signUp, type SignUpRequest } from "../apis/auth";
 import axios from "axios";
 
 export default function SignUp() {
@@ -12,8 +12,7 @@ export default function SignUp() {
 
   const { mutate: signUpMutate, isPending } = useMutation({
     mutationFn: (data: SignUpRequest) => signUp(data),
-    onSuccess: (data: SignUpResponse) => {
-      console.log("회원가입 성공:", data);
+    onSuccess: () => {
       location.href = "/login";
     },
     onError: (error) => {
@@ -50,9 +49,6 @@ export default function SignUp() {
 
     const normalizedUserId = userId.trim();
     const normalizedSignupCode = signupCode.trim();
-    console.log(
-      `현재 입력값 - ID: ${normalizedUserId}, PW: ${password}, CODE: ${normalizedSignupCode}`,
-    );
 
     if (!normalizedUserId || !password || !normalizedSignupCode) {
       alert("모든 필드를 입력해주세요.");

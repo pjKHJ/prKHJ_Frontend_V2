@@ -27,7 +27,6 @@ export default function Login() {
       } else {
         localStorage.removeItem("savedId");
       }
-      console.log("로그인 성공:", data);
       navigate("/list");
     },
     onError: (error) => {

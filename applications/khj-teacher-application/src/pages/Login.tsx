@@ -8,7 +8,7 @@ import { useAuthStore } from "../store/authStore";
 import axios from "axios";
 
 export default function Login() {
-  const [Id, setId] = useState(() => localStorage.getItem("savedId") || "");
+  const [id, setId] = useState(() => localStorage.getItem("savedId") || "");
   const [password, setPassword] = useState("");
 
   const [saveId, setSaveId] = useState(!!localStorage.getItem("savedId"));
@@ -20,10 +20,10 @@ export default function Login() {
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (data: LoginResponse) => {
       setAccessToken(data.accessToken);
-      localStorage.setItem("currentUserId", Id);
+      localStorage.setItem("currentUserId", id);
 
       if (saveId) {
-        localStorage.setItem("savedId", Id);
+        localStorage.setItem("savedId", id);
       } else {
         localStorage.removeItem("savedId");
       }
@@ -56,7 +56,7 @@ export default function Login() {
   const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     loginMutate({
-      userName: Id,
+      userName: id,
       password: password,
     });
   };
@@ -73,7 +73,7 @@ export default function Login() {
             name="아이디"
             width="100%"
             height="87px"
-            value={Id}
+            value={id}
             next="을"
             onChange={(e) => setId(e.target.value)}
           />

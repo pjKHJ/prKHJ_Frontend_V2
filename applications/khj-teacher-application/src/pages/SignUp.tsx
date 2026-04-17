@@ -3,9 +3,11 @@ import { useState } from "react";
 import { Input } from "@khj/user-interfaces";
 import { useMutation } from "@tanstack/react-query";
 import { signUp, type SignUpRequest } from "../apis/auth";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [signupCode, setSignupCode] = useState("");
@@ -13,7 +15,7 @@ export default function SignUp() {
   const { mutate: signUpMutate, isPending } = useMutation({
     mutationFn: (data: SignUpRequest) => signUp(data),
     onSuccess: () => {
-      location.href = "/login";
+      navigate("/login", { replace: true });
     },
     onError: (error) => {
       let errorMessage = "회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.";

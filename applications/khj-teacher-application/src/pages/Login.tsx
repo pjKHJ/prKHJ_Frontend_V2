@@ -5,42 +5,58 @@ import { useMutation } from "@tanstack/react-query";
 import { login, type LoginRequest, type LoginResponse } from "../apis/auth";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import axios from "axios";
 
 export default function Login() {
-  const [email, setEmail] = useState(
-    () => localStorage.getItem("savedEmail") || "",
-  );
+  const [id, setId] = useState(() => localStorage.getItem("savedId") || "");
   const [password, setPassword] = useState("");
 
-  const [saveEmail, setSaveEmail] = useState(
-    !!localStorage.getItem("savedEmail"),
-  );
+  const [saveId, setSaveId] = useState(!!localStorage.getItem("savedId"));
 
   const navigate = useNavigate();
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
-  const { mutate: loginMutate } = useMutation({
+  const { mutate: loginMutate, isPending } = useMutation({
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (data: LoginResponse) => {
       setAccessToken(data.accessToken);
+      localStorage.setItem("currentUserId", id);
 
-      if (saveEmail) {
-        localStorage.setItem("savedEmail", email);
+      if (saveId) {
+        localStorage.setItem("savedId", id);
       } else {
-        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedId");
       }
-      console.log("로그인 성공:", data);
-      navigate("/");
+      navigate("/list");
     },
     onError: (error) => {
+      let errorMessage = "로그인에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
+      if (axios.isAxiosError(error)) {
+        const code = error.response?.data?.code;
+        switch (code) {
+          case "USR_400":
+            errorMessage = "잘못된 요청입니다. 입력값을 확인해주세요.";
+            break;
+          case "USR_401":
+            errorMessage = "이메일 또는 비밀번호가 올바르지 않습니다.";
+            break;
+          case "USR_404":
+            errorMessage = "존재하지 않는 유저입니다.";
+            break;
+          default:
+            break;
+        }
+      }
       console.error("로그인 실패:", error);
+      alert(errorMessage);
     },
   });
 
   const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     loginMutate({
-      userName: email,
+      userName: id,
       password: password,
     });
   };
@@ -50,16 +66,16 @@ export default function Login() {
       <Container>
         <TextContainer>
           <h1>Daedeok Software Coding Test System 로그인</h1>
-          <p>이메일/비밀번호 로그인</p>
+          <p>아이디/비밀번호 로그인</p>
         </TextContainer>
         <InputContainer onSubmit={handleLogin}>
           <Input
-            name="이메일"
+            name="아이디"
             width="100%"
             height="87px"
-            value={email}
+            value={id}
             next="을"
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setId(e.target.value)}
           />
           <Input
             name="비밀번호"
@@ -70,15 +86,17 @@ export default function Login() {
             next="를"
             onChange={(e) => setPassword(e.target.value)}
           />
-          <SaveEmailContainer>
-            <SaveEmailCheckbox
+          <SaveIdContainer>
+            <SaveIdCheckbox
               type="checkbox"
-              checked={saveEmail}
-              onChange={(e) => setSaveEmail(e.target.checked)}
+              checked={saveId}
+              onChange={(e) => setSaveId(e.target.checked)}
             />
-            <span>이메일 저장</span>
-          </SaveEmailContainer>
-          <LoginButton type="submit">로그인</LoginButton>
+            <span>아이디 저장</span>
+          </SaveIdContainer>
+          <LoginButton type="submit" disabled={isPending}>
+            {isPending ? "로그인 중..." : "로그인"}
+          </LoginButton>
         </InputContainer>
       </Container>
     </PageWrapper>
@@ -213,7 +231,7 @@ const InputContainer = styled.form`
   }
 `;
 
-const SaveEmailContainer = styled.div`
+const SaveIdContainer = styled.div`
   display: flex;
   justify-content: flex-start;
   flex-direction: row;
@@ -237,7 +255,7 @@ const SaveEmailContainer = styled.div`
   }
 `;
 
-const SaveEmailCheckbox = styled.input`
+const SaveIdCheckbox = styled.input`
   display: flex;
   padding: 2px;
 

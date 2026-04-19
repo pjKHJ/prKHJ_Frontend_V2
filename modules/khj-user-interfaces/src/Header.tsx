@@ -1,14 +1,35 @@
 import styled from "@emotion/styled";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCallback, useState } from "react";
 import Logo from "../assets/Logo.svg";
 
-export default function Header() {
+interface HeaderProps {
+  isLoggedIn: boolean;
+  currentUserId: string | null;
+  onLogout: () => void;
+}
+
+export default function Header({
+  isLoggedIn,
+  currentUserId,
+  onLogout,
+}: HeaderProps) {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
   }, []);
+
+  const handleLogout = () => {
+    if (!window.confirm("로그아웃 하시겠습니까?")) {
+      return;
+    }
+
+    onLogout();
+    closeMobileMenu();
+    navigate("/login");
+  };
 
   return (
     <Container>
@@ -24,9 +45,23 @@ export default function Header() {
         </DesktopNav>
 
         <DesktopAuth>
-          <UpText to="/login">로그인</UpText>
+          {isLoggedIn && currentUserId ? (
+            <>
+              <UpUserText>{currentUserId}</UpUserText>
+              <Divider>|</Divider>
+              <UpActionButton type="button" onClick={handleLogout}>
+                로그아웃
+              </UpActionButton>
+            </>
+          ) : (
+            <>
+              <UpText to="/login">로그인</UpText>
+              <Divider>|</Divider>
+              <UpText to="/signup">회원가입</UpText>
+            </>
+          )}
           <Divider>|</Divider>
-          <UpText to="/signup">회원가입</UpText>
+          <UpText to="/">About</UpText>
         </DesktopAuth>
 
         <HamburgerButton
@@ -55,12 +90,23 @@ export default function Header() {
         </MobileSection>
 
         <MobileSection>
-          <UpText to="/login" onClick={closeMobileMenu}>
-            로그인
-          </UpText>
-          <UpText to="/signup" onClick={closeMobileMenu}>
-            회원가입
-          </UpText>
+          {isLoggedIn && currentUserId ? (
+            <>
+              <UpUserText>{currentUserId}</UpUserText>
+              <UpActionButton type="button" onClick={handleLogout}>
+                로그아웃
+              </UpActionButton>
+            </>
+          ) : (
+            <>
+              <UpText to="/login" onClick={closeMobileMenu}>
+                로그인
+              </UpText>
+              <UpText to="/signup" onClick={closeMobileMenu}>
+                회원가입
+              </UpText>
+            </>
+          )}
           <UpText to="/" onClick={closeMobileMenu}>
             About
           </UpText>
@@ -253,6 +299,46 @@ const UpText = styled(Link)`
     font-size: 12px;
     padding: 6px 8px;
   }
+`;
+
+const UpActionButton = styled.button`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+
+  width: fit-content;
+  height: 24px;
+
+  border: none;
+  background: transparent;
+
+  font-family: "Pretendard GOV";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 150%;
+
+  color: #1e2124;
+  cursor: pointer;
+`;
+
+const UpUserText = styled.span`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+
+  width: fit-content;
+  height: 24px;
+
+  font-family: "Pretendard GOV";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 150%;
+
+  color: #1e2124;
 `;
 
 const Divider = styled.span`

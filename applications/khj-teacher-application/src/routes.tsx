@@ -1,12 +1,13 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import SignUp from "./pages/SingUp";
+import SignUp from "./pages/SignUp";
 import AddStudent from "./pages/AddStudent";
 import DeleteStudent from "./pages/DeleteStudent";
 import List from "./pages/List";
 import { Layout } from "@khj/user-interfaces";
 import Entry from "./pages/Entry";
 import Detail from "./pages/Detail";
+import { RequireAuth, RequireGuest } from "./RouteGuards";
 
 export const router = createBrowserRouter([
   {
@@ -15,39 +16,49 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div>Home</div>,
+        element: <Navigate to="/entry" replace />,
       },
       {
-        path: "signup",
-        element: <SignUp />,
+        element: <RequireGuest />,
+        children: [
+          {
+            path: "entry",
+            element: <Entry />,
+          },
+          {
+            path: "login",
+            element: <Login />,
+          },
+          {
+            path: "signup",
+            element: <SignUp />,
+          },
+        ],
       },
       {
-        path: "login",
-        element: <Login />,
-      },
-      {
-        path: "add-student",
-        element: <AddStudent />,
-      },
-      {
-        path: "entry",
-        element: <Entry />,
-      },
-      {
-        path: "delete-student",
-        element: <DeleteStudent />,
-      },
-      {
-        path: "list",
-        element: <List />,
-      },
-      {
-        path: "detail/:id",
-        element: <Detail />,
+        element: <RequireAuth />,
+        children: [
+          {
+            path: "add-student",
+            element: <AddStudent />,
+          },
+          {
+            path: "delete-student",
+            element: <DeleteStudent />,
+          },
+          {
+            path: "list",
+            element: <List />,
+          },
+          {
+            path: "dashboard/:id",
+            element: <Detail />,
+          },
+        ],
       },
       {
         path: "*",
-        element: <div>Not Found</div>,
+        element: <Navigate to="/entry" replace />,
       },
     ],
   },
